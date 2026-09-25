@@ -809,7 +809,7 @@ Through this project, the following concepts were implemented and practiced:
 ## 📸 Screenshots
 
 **Final Outputs**
-[Click Here](Crowd-management-System/View_Outputs/)
+[Click Here](View_Outputs/)
 
 ---
 
