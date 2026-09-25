@@ -1,0 +1,609 @@
+/* =========================================================
+   CONFIGURE CAMERAS - PRODUCTION UI
+   ========================================================= */
+
+.configure-shell {
+    min-height: 100vh;
+}
+
+.configure-content {
+    overflow: auto;
+}
+
+.configure-content-header {
+    min-height: 76px;
+    margin-top: 10px;
+    padding: 0 18px;
+    border: 1px solid rgba(255, 255, 255, .72);
+    border-radius: 16px;
+    background:
+        linear-gradient(90deg, rgba(239, 247, 255, .62) 0%, rgba(239, 247, 255, .18) 48%, rgba(239, 247, 255, .06) 100%),
+        url("/admin-welcome-skyline.png") center / cover no-repeat;
+    box-shadow: 0 10px 26px rgba(38, 79, 133, .08);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+}
+
+.configure-content-header .admin-header-title h1 {
+    font-size: 25px;
+}
+
+.configure-content-header .admin-header-title p {
+    margin-top: 3px;
+    color: #58729b;
+    font-size: 12px;
+}
+
+.configure-date-time {
+    display: flex;
+    justify-content: flex-end;
+    gap: 22px;
+    padding: 12px 3px 14px;
+    color: #536b91;
+    font-size: 11px;
+}
+
+.configure-content-header .admin-header-actions {
+    gap: 10px;
+}
+
+.configure-content-header .admin-notification,
+.configure-content-header .admin-profile {
+    border: 1px solid rgba(255, 255, 255, .78);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, .44);
+    box-shadow: 0 6px 18px rgba(35, 76, 130, .1);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+}
+
+.configure-content-header .admin-notification {
+    display: grid;
+    width: 40px;
+    height: 40px;
+    place-items: center;
+}
+
+.configure-content-header .admin-profile {
+    padding: 5px 10px 5px 5px;
+}
+
+.configure-workspace {
+    min-width: 0;
+}
+
+.configure-cameras-page {
+    min-height: 100vh;
+    padding: 22px 24px 40px;
+    background:
+        radial-gradient(circle at 10% 0%, rgba(219, 234, 254, 0.75), transparent 34%),
+        radial-gradient(circle at 90% 0%, rgba(224, 231, 255, 0.75), transparent 36%),
+        #f7faff;
+    color: #102047;
+}
+
+.configure-page-header {
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    min-height: 82px;
+    margin-bottom: 18px;
+}
+
+.configure-back-button {
+    position: absolute;
+    left: 0;
+    top: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    min-height: 42px;
+    padding: 0 18px;
+    border: 1px solid #dce6f5;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.92);
+    color: #15346d;
+    font-size: 14px;
+    font-weight: 700;
+    box-shadow: 0 5px 14px rgba(35, 72, 130, 0.08);
+    cursor: pointer;
+}
+
+.configure-back-button:hover {
+    background: #ffffff;
+    border-color: #c9d9ef;
+    transform: translateY(-1px);
+}
+
+.configure-page-heading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    text-align: left;
+}
+
+.configure-page-icon {
+    width: 58px;
+    height: 58px;
+    display: grid;
+    place-items: center;
+    border-radius: 17px;
+    background: linear-gradient(145deg, #e0ecff, #cfe2ff);
+    color: #1265e8;
+    font-size: 31px;
+    box-shadow: 0 8px 20px rgba(37, 99, 235, 0.10);
+}
+
+.configure-cameras-page .dashboard-header {
+    margin: 0;
+}
+
+.configure-cameras-page .dashboard-title {
+    margin: 0;
+    color: #102454;
+    font-size: 30px;
+    line-height: 1.05;
+    letter-spacing: -0.8px;
+}
+
+.configure-cameras-page .dashboard-subtitle {
+    margin-top: 7px;
+    color: #61759a;
+    font-size: 13px;
+}
+
+
+/* =========================================================
+   TOP-LEVEL TABS
+   ========================================================= */
+
+.configure-main-tabs {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    margin-bottom: 16px;
+    padding: 0;
+}
+
+.configure-main-tab {
+    min-height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 15px;
+    padding: 11px 17px;
+    border: 1px solid #dce6f5;
+    border-radius: 12px;
+    background: #ffffff;
+    color: #213a67;
+    text-align: left;
+    box-shadow: 0 6px 18px rgba(34, 70, 130, 0.05);
+    cursor: pointer;
+    transition: 0.18s ease;
+}
+
+.configure-main-tab:hover {
+    border-color: #bcd2f4;
+    transform: translateY(-1px);
+}
+
+.configure-main-tab.active {
+    border-color: #1677f5;
+    background: linear-gradient(135deg, #1688ff, #0b6ce3);
+    color: #ffffff;
+    box-shadow: 0 10px 24px rgba(24, 105, 239, 0.24);
+}
+
+.configure-main-tab-icon {
+    width: 42px;
+    height: 42px;
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    border-radius: 12px;
+    background: #edf5ff;
+    color: #1670ee;
+    font-size: 22px;
+}
+
+.configure-main-tab.active .configure-main-tab-icon {
+    background: rgba(255, 255, 255, 0.17);
+    color: #ffffff;
+}
+
+.configure-main-tab strong,
+.configure-main-tab small {
+    display: block;
+}
+
+.configure-main-tab strong {
+    font-size: 13px;
+    line-height: 1.2;
+}
+
+.configure-main-tab small {
+    margin-top: 5px;
+    color: #7284a4;
+    font-size: 10px;
+    font-weight: 500;
+}
+
+.configure-main-tab.active small {
+    color: rgba(255, 255, 255, 0.82);
+}
+
+
+/* =========================================================
+   CAMERA MANAGEMENT
+   ========================================================= */
+
+.configure-cameras-page .camera-management-section {
+    margin: 0;
+    padding: 22px;
+    border: 1px solid #e0e9f6;
+    border-radius: 15px;
+    background: rgba(255, 255, 255, 0.94);
+    box-shadow: 0 14px 32px rgba(41, 75, 125, 0.07);
+}
+
+.configure-content .camera-management-section,
+.configure-content .zone-management-tab {
+    margin: 0;
+    padding: 0;
+    border: 1px solid #e2eaf5;
+    border-radius: 12px;
+    background: #ffffff;
+    box-shadow: 0 7px 20px rgba(44, 87, 142, .06);
+}
+
+.configure-content .camera-management-header,
+.configure-content .zone-management-heading-row {
+    padding: 18px 20px;
+}
+
+.configure-content .camera-management-list {
+    padding: 14px 18px 18px;
+}
+
+.configure-content .camera-management-empty,
+.configure-content .zone-management-empty {
+    margin: 0 18px 18px;
+    border: 1px dashed #cddceb;
+    border-radius: 9px;
+    background: #f8fbff;
+}
+
+.configure-content .zone-management-workspace {
+    padding: 0 18px 18px;
+}
+
+.configure-cameras-page .camera-management-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    margin: 0 0 18px;
+    padding-bottom: 17px;
+    border-bottom: 1px solid #e7edf7;
+}
+
+.configure-cameras-page .camera-section-title {
+    margin: 0;
+    color: #10204a;
+    font-size: 20px;
+    font-weight: 800;
+}
+
+.configure-cameras-page .camera-management-subtitle {
+    margin: 6px 0 0;
+    color: #7182a1;
+    font-size: 13px;
+}
+
+.configure-cameras-page .camera-management-add-button {
+    min-height: 42px;
+    padding: 0 19px;
+    border: none;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #238bf4, #1264ed);
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 800;
+    box-shadow: 0 8px 18px rgba(24, 105, 239, 0.20);
+    cursor: pointer;
+}
+
+.configure-cameras-page .camera-management-add-button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 11px 22px rgba(24, 105, 239, 0.25);
+}
+
+.configure-cameras-page .camera-management-list {
+    display: flex;
+    flex-direction: column;
+    gap: 13px;
+}
+
+.configure-cameras-page .camera-management-item {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 20px;
+    align-items: center;
+    min-height: 118px;
+    padding: 20px 20px 20px 92px;
+    border: 1px solid #dfe8f5;
+    border-radius: 13px;
+    background: #ffffff;
+    box-shadow: 0 6px 17px rgba(30, 62, 110, 0.045);
+}
+
+.configure-cameras-page .camera-management-item::before {
+    content: "▣";
+    position: absolute;
+    left: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 52px;
+    height: 52px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: #e9f2ff;
+    color: #176ce9;
+    font-size: 24px;
+}
+
+.configure-cameras-page .camera-management-info {
+    min-width: 0;
+}
+
+.configure-cameras-page .camera-management-info > div:first-child {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+}
+
+.configure-cameras-page .camera-management-info strong {
+    color: #14234d;
+    font-size: 16px;
+}
+
+.configure-cameras-page .camera-management-info > div:first-child span {
+    padding: 5px 9px;
+    border-radius: 999px;
+    background: #edf5ff;
+    color: #1768df;
+    font-size: 10px;
+    font-weight: 800;
+}
+
+.configure-cameras-page .camera-management-source {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    margin-top: 10px;
+}
+
+.configure-cameras-page .camera-source-badge {
+    padding: 5px 9px;
+    border-radius: 6px;
+    background: #f0f4fa;
+    color: #52637f;
+    font-size: 10px;
+    font-weight: 800;
+}
+
+.configure-cameras-page .camera-management-source > span:last-child {
+    overflow: hidden;
+    color: #617493;
+    font-size: 12px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.configure-cameras-page .camera-management-status {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+}
+
+.configure-cameras-page .camera-enabled,
+.configure-cameras-page .camera-disabled {
+    padding: 8px 11px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 800;
+}
+
+.configure-cameras-page .camera-enabled {
+    border: 1px solid #b8efd0;
+    background: #effcf5;
+    color: #159447;
+}
+
+.configure-cameras-page .camera-disabled {
+    background: #f1f3f6;
+    color: #718096;
+}
+
+.configure-cameras-page .camera-management-edit,
+.configure-cameras-page .camera-management-delete {
+    min-height: 38px;
+    padding: 0 13px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.configure-cameras-page .camera-management-edit {
+    border: 1px solid #c9dcff;
+    background: #eef5ff;
+    color: #1268e8;
+}
+
+.configure-cameras-page .camera-management-delete {
+    border: 1px solid #ffcaca;
+    background: #fff1f1;
+    color: #ef3333;
+}
+
+.configure-cameras-page .camera-management-empty {
+    padding: 45px 20px;
+    border: 1px dashed #cfdced;
+    border-radius: 12px;
+    color: #7485a2;
+    text-align: center;
+}
+
+
+/* =========================================================
+   CAMERA FORM MODAL
+   ========================================================= */
+
+.configure-cameras-page .camera-management-modal-backdrop {
+    background: rgba(13, 31, 67, 0.55);
+    backdrop-filter: blur(4px);
+}
+
+.configure-cameras-page .camera-management-modal {
+    width: min(620px, 100%);
+    border: 1px solid #dce6f5;
+    border-radius: 16px;
+    background: #ffffff;
+    box-shadow: 0 28px 70px rgba(16, 40, 80, 0.24);
+}
+
+.configure-cameras-page .camera-management-modal-header {
+    padding: 20px 22px;
+    border-bottom: 1px solid #e6edf7;
+}
+
+.configure-cameras-page .camera-management-modal-header h3 {
+    margin: 0;
+    color: #10204a;
+    font-size: 20px;
+}
+
+.configure-cameras-page .camera-management-modal-header p {
+    margin: 5px 0 0;
+    color: #71819e;
+    font-size: 12px;
+}
+
+.configure-cameras-page .camera-management-form {
+    padding: 22px;
+}
+
+.configure-cameras-page .camera-management-form label > span {
+    color: #33466b;
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.configure-cameras-page .camera-management-form input,
+.configure-cameras-page .camera-management-form select {
+    border-color: #d7e2f0;
+    border-radius: 8px;
+    min-height: 42px;
+}
+
+.configure-cameras-page .camera-management-save {
+    border-radius: 9px;
+    background: linear-gradient(135deg, #238bf4, #1264ed);
+}
+
+.configure-cameras-page .camera-management-cancel {
+    border-radius: 9px;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 900px) {
+    .configure-page-header {
+        min-height: 100px;
+    }
+
+    .configure-back-button {
+        position: static;
+        align-self: flex-start;
+        margin-bottom: 12px;
+    }
+
+    .configure-page-header {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .configure-main-tabs {
+        grid-template-columns: 1fr;
+    }
+
+    .configure-content {
+        padding: 0 16px 24px;
+    }
+
+    .configure-cameras-page .camera-management-item {
+        grid-template-columns: 1fr;
+        padding-right: 18px;
+    }
+
+    .configure-cameras-page .camera-management-status {
+        justify-content: flex-start;
+    }
+}
+
+@media (max-width: 600px) {
+    .configure-cameras-page {
+        padding: 16px;
+    }
+
+    .configure-page-heading {
+        gap: 10px;
+    }
+
+    .configure-page-icon {
+        width: 46px;
+        height: 46px;
+        font-size: 24px;
+    }
+
+    .configure-cameras-page .dashboard-title {
+        font-size: 24px;
+    }
+
+    .configure-main-tab {
+        padding: 12px 15px;
+    }
+
+    .configure-cameras-page .camera-management-section {
+        padding: 15px;
+    }
+
+    .configure-cameras-page .camera-management-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .configure-cameras-page .camera-management-add-button {
+        width: 100%;
+    }
+
+    .configure-cameras-page .camera-management-item {
+        padding-left: 20px;
+    }
+
+    .configure-cameras-page .camera-management-item::before {
+        display: none;
+    }
+
+    .configure-cameras-page .camera-management-status {
+        flex-wrap: wrap;
+    }
+}

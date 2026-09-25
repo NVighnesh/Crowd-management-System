@@ -1,0 +1,437 @@
+/* =========================================================
+   CROWD MANAGEMENT DASHBOARD - PLANNED UI
+   ========================================================= */
+
+html,
+body,
+#root {
+    width: 100%;
+    min-width: 0;
+}
+
+body {
+    margin: 0;
+    background:
+        radial-gradient(circle at 0% 0%, rgba(226, 239, 255, 0.72), transparent 34%),
+        radial-gradient(circle at 100% 0%, rgba(236, 233, 255, 0.62), transparent 32%),
+        #f7faff;
+    color: #13234a;
+}
+
+#root {
+    max-width: none;
+    margin: 0;
+    border: none;
+    text-align: left;
+    display: block;
+}
+
+.dashboard {
+    min-height: 100vh;
+    padding: 28px 32px 42px;
+}
+
+.dashboard-header {
+    margin-bottom: 25px;
+    text-align: center;
+}
+
+.dashboard-title {
+    margin: 0;
+    color: #10214b;
+    font-size: 31px;
+    font-weight: 800;
+    letter-spacing: -0.8px;
+}
+
+.dashboard-subtitle {
+    margin-top: 7px;
+    color: #63779b;
+    font-size: 13px;
+}
+
+
+/* =========================================================
+   OVERVIEW
+   ========================================================= */
+
+.overview-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 14px;
+    margin-bottom: 20px;
+}
+
+.overview-card {
+    position: relative;
+    min-height: 105px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 18px 18px 18px 76px;
+    border: 1px solid #e1e9f5;
+    border-radius: 13px;
+    background: rgba(255, 255, 255, 0.94);
+    box-shadow: 0 7px 20px rgba(37, 73, 124, 0.055);
+}
+
+.overview-card::before {
+    position: absolute;
+    left: 18px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 42px;
+    height: 42px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    font-size: 19px;
+    font-weight: 800;
+}
+
+.overview-card:nth-child(1)::before {
+    content: "▣";
+    background: #e4efff;
+    color: #1670eb;
+}
+
+.overview-card:nth-child(2)::before {
+    content: "⌁";
+    background: #dcf9e8;
+    color: #18a25a;
+}
+
+.overview-card:nth-child(3)::before {
+    content: "♟";
+    background: #eee4ff;
+    color: #7b4be0;
+}
+
+.overview-card:nth-child(4)::before {
+    content: "!";
+    background: #ffe5e5;
+    color: #ec4444;
+}
+
+.overview-label {
+    margin: 0 0 5px;
+    color: #617494;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.overview-value {
+    margin: 0;
+    color: #11234d;
+    font-size: 25px;
+    font-weight: 800;
+}
+
+
+/* =========================================================
+   CONFIGURE CTA
+   ========================================================= */
+
+.dashboard-configure-actions {
+    display: flex;
+    justify-content: center;
+    margin: 4px 0 31px;
+}
+
+.configure-cameras-button {
+    min-width: 275px;
+    min-height: 48px;
+    border: none;
+    border-radius: 11px;
+    background: linear-gradient(135deg, #1596ed, #1765ed);
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 800;
+    box-shadow: 0 9px 21px rgba(24, 105, 237, 0.22);
+}
+
+.configure-cameras-button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 12px 25px rgba(24, 105, 237, 0.27);
+}
+
+.dashboard-configure-actions::after {
+    content: "Add, edit, or manage cameras and zones";
+    position: absolute;
+    margin-top: 59px;
+    color: #7b8ba6;
+    font-size: 11px;
+}
+
+
+
+
+.dashboard-section-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    margin-bottom: 14px;
+}
+
+.dashboard-section-heading .camera-section-title {
+    margin: 0;
+}
+
+.dashboard-online-summary {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    color: #1a2c53;
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.dashboard-online-summary .status-dot {
+    background: #19a95a;
+}
+
+/* =========================================================
+   CAMERA SECTION
+   ========================================================= */
+
+.dashboard > section:nth-of-type(2) {
+    margin-top: 4px;
+}
+
+.dashboard > section:nth-of-type(2) > .camera-section-title {
+    margin-bottom: 14px;
+}
+
+.camera-section-title {
+    color: #11234c;
+    font-size: 20px;
+    font-weight: 800;
+}
+
+.camera-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 17px;
+}
+
+.camera-card {
+    overflow: hidden;
+    border: 1px solid #dfe8f4;
+    border-radius: 14px;
+    background: #ffffff;
+    box-shadow: 0 9px 24px rgba(34, 69, 119, 0.055);
+}
+
+.camera-card-header {
+    padding: 15px 17px 13px;
+    border-bottom: 1px solid #edf1f6;
+}
+
+.camera-name {
+    color: #14254d;
+    font-size: 17px;
+    font-weight: 800;
+}
+
+.camera-header-actions {
+    gap: 9px;
+}
+
+.camera-status {
+    color: #17284d;
+    font-size: 11px;
+    font-weight: 800;
+}
+
+.status-dot {
+    width: 8px;
+    height: 8px;
+}
+
+.focus-button {
+    min-height: 30px;
+    padding: 0 10px;
+    border: 1px solid #d9e4f1;
+    border-radius: 7px;
+    background: #ffffff;
+    color: #253b61;
+    font-size: 10px;
+    font-weight: 800;
+}
+
+.camera-video-container {
+    aspect-ratio: 16 / 9;
+    background: #e9edf2;
+}
+
+.camera-video {
+    object-fit: cover;
+}
+
+.camera-content {
+    padding: 14px 15px 15px;
+}
+
+.camera-count {
+    margin-bottom: 11px;
+    color: #11234d;
+    font-size: 15px;
+    text-align: center;
+}
+
+.camera-health {
+    gap: 7px;
+    margin-bottom: 13px;
+}
+
+.health-row {
+    min-height: 36px;
+    padding: 7px 9px;
+    border: 1px solid #edf1f6;
+    border-radius: 7px;
+    background: #fbfcfe;
+    font-size: 10px;
+}
+
+.health-row strong {
+    font-size: 10px;
+}
+
+.camera-error {
+    font-size: 10px;
+}
+
+
+/* =========================================================
+   ZONE MONITORING CTA
+   ========================================================= */
+
+.zones-section {
+    display: none;
+}
+
+.zone-monitoring-button {
+    width: 100%;
+    min-height: 43px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    margin-top: 3px;
+    border: none;
+    border-radius: 9px;
+    background: linear-gradient(135deg, #edf5ff, #eaf2ff);
+    color: #162b56;
+    font-size: 12px;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.zone-monitoring-button:hover {
+    background: #e3efff;
+}
+
+.zone-monitoring-button span:last-child {
+    margin-left: auto;
+    margin-right: 10px;
+    color: #176be8;
+    font-size: 17px;
+}
+
+
+/* =========================================================
+   RECENT ALERTS
+   ========================================================= */
+
+.alerts-section {
+    margin-top: 27px;
+    padding: 18px;
+    border: 1px solid #dfe8f4;
+    border-radius: 13px;
+    background: rgba(255, 255, 255, 0.95);
+    box-shadow: 0 8px 22px rgba(35, 69, 117, 0.045);
+}
+
+.alerts-header {
+    margin-bottom: 12px;
+}
+
+.alerts-header .camera-section-title {
+    font-size: 18px;
+}
+
+.alerts-count {
+    color: #7486a2;
+    font-size: 11px;
+}
+
+
+/* =========================================================
+   FOCUS MODAL - KEEP STRUCTURE, POLISH VISUALS
+   ========================================================= */
+
+.camera-modal-backdrop {
+    background: rgba(13, 31, 67, 0.60);
+    backdrop-filter: blur(5px);
+}
+
+.camera-modal {
+    border: 1px solid #dce6f4;
+    border-radius: 16px;
+    box-shadow: 0 28px 75px rgba(12, 35, 75, 0.28);
+}
+
+.camera-modal-header {
+    padding: 18px 21px;
+}
+
+.camera-modal-header h2 {
+    color: #11234d;
+    font-weight: 800;
+}
+
+.camera-modal-content {
+    padding: 20px;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 1000px) {
+    .overview-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .camera-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 600px) {
+    .dashboard {
+        padding: 18px 14px 30px;
+    }
+
+    .dashboard-title {
+        font-size: 25px;
+    }
+
+    .overview-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .overview-card {
+        min-height: 92px;
+    }
+
+    .configure-cameras-button {
+        width: 100%;
+    }
+
+    .camera-grid {
+        gap: 12px;
+    }
+}

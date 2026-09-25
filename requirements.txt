@@ -1,0 +1,17 @@
+# Runtime dependencies
+fastapi==0.141.1
+uvicorn==0.53.0
+pydantic==2.13.5
+python-multipart==0.0.32
+PyYAML==6.0.3
+numpy==2.5.3
+opencv-python==5.0.0.93
+ultralytics==8.4.153
+torch==2.14.0
+torchvision==0.29.0
+psutil==7.2.2
+psycopg[binary]==3.2.10
+
+# Test dependencies
+pytest==9.1.1
+httpx==0.28.1

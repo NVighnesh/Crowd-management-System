@@ -1,0 +1,21 @@
+{
+  "camera_id": "CAM_002",
+  "zones": [
+    {
+      "zone_id": "ZONE_001",
+      "camera_id": "CAM_002",
+      "name": "zone 1",
+      "threshold": 2,
+      "threshold_type": "count",
+      "polygon": [[199,45],[773,31],[784,642],[149,646]]
+    },
+    {
+      "zone_id": "ZONE_002",
+      "camera_id": "CAM_002",
+      "name": "zone 2",
+      "threshold": 10,
+      "threshold_type": "count",
+      "polygon": [[854,52],[1410,40],[1414,664],[880,653]]
+    }
+  ]
+}

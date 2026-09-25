@@ -1,0 +1,80 @@
+system:
+  name: crowd-management
+  version: "1.0"
+
+security:
+  enabled: false
+  token_expiry_minutes: 60
+  stream_token_expiry_seconds: 300
+  admin_role: ADMIN
+  login_rate_limit:
+    enabled: true
+    max_failures: 5
+    window_seconds: 300
+    lockout_seconds: 300
+
+cameras:
+
+  - id: CAM_001
+    source_type: file
+    source: videos/crowd.mp4
+    zones_config: configs/zones_cam001.json
+    loop: true
+    enabled: true
+
+  - id: CAM_002
+    source_type: file
+    source: videos/crowd.mp4
+    zones_config: configs/zones_cam002.json
+    loop: true
+    enabled: true
+
+  # Future cameras can be added here
+  #
+  # - id: CAM_002
+  #   source_type: rtsp
+  #   source: rtsp://username:password@camera-ip/stream
+  #   enabled: true
+  #
+  # - id: CAM_003
+  #   source_type: rtsp
+  #   source: rtsp://username:password@camera-ip/stream
+  #   enabled: false
+
+inference:
+  model: yolo26n.pt
+  backend: ultralytics
+  device: auto
+  task: detect
+  image_size: 640
+  confidence: 0.35
+
+tracking:
+  enabled: true
+  tracker: bytetrack.yaml
+
+counting:
+  whole_frame:
+    enabled: true
+    mode: tracked_active
+
+  zones:
+    enabled: true
+    point: bottom_center
+
+processing:
+  inference_fps: 5
+  stream_fps: 10
+  jpeg_quality: 80
+  max_result_age_seconds: 5
+  camera_stale_timeout_seconds: 10
+  frame_failure_threshold: 3
+  recovery_max_attempts: 3
+  recovery_retry_delay_seconds: 1
+  recovery_backoff_multiplier: 2
+  recovery_poll_interval_seconds: 0.5
+  stale_recovery_threshold: 2
+  rtsp_open_timeout_ms: 10000
+  rtsp_read_timeout_ms: 10000
+  rtsp_backend: any
+   

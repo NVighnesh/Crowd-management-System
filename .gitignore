@@ -1,0 +1,122 @@
+# =========================================================
+# PYTHON ENVIRONMENTS AND GENERATED FILES
+# =========================================================
+
+.venv/
+venv/
+env/
+
+__pycache__/
+*.py[cod]
+*$py.class
+
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+.coverage
+.coverage.*
+htmlcov/
+
+
+# =========================================================
+# LOCAL CONFIGURATION AND SECRETS
+# =========================================================
+
+.env
+.env.*
+!.env.example
+
+*.secret
+*.pem
+*.key
+
+
+# =========================================================
+# RUNTIME DATA
+# =========================================================
+
+data/
+logs/
+*.log
+
+*.db
+*.db-*
+
+outputs/
+
+tmp/
+temp/
+
+
+# =========================================================
+# LOCAL CAMERA UPLOADS
+# =========================================================
+
+data/camera_uploads/
+
+
+# =========================================================
+# FRONTEND DEPENDENCIES AND BUILD OUTPUT
+# =========================================================
+
+dashboard/node_modules/
+dashboard/dist/
+dashboard/dist-ssr/
+dashboard/.vite/
+dashboard/*.local
+
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+
+# =========================================================
+# COVERAGE, CACHES, AND EDITOR FILES
+# =========================================================
+
+.cache/
+
+.DS_Store
+Thumbs.db
+
+.idea/
+
+.vscode/*
+!.vscode/extensions.json
+
+*.swp
+*.swo
+
+
+# =========================================================
+# ARCHIVE / TEMPORARY FILES
+# =========================================================
+
+*.zip
+
+
+# =========================================================
+# PUBLIC PROJECT ASSETS
+# =========================================================
+#
+# These folders are intentionally included in GitHub:
+#
+# View_Outputs/             -> Project screenshots
+# trained-sample-videos/    -> Training/sample videos
+# demo-videos/              -> User testing/demo videos
+#
+# Do NOT add global video-extension rules such as
+# *.mp4, *.mov, *.avi, etc., because these folders
+# intentionally contain videos that must be committed.
+#
+
+!View_Outputs/
+!View_Outputs/**
+
+!trained-sample-videos/
+!trained-sample-videos/**
+
+!demo-videos/
+!demo-videos/**

@@ -1,0 +1,91 @@
+
+/* Additional Camera Management source picker styles.
+   Existing Camera Management styling remains untouched. */
+
+.camera-file-picker {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.camera-file-picker-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #374151;
+}
+
+.camera-file-picker-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.camera-file-input {
+    display: none;
+}
+
+.camera-file-browse-button {
+    min-height: 40px;
+    padding: 0 14px;
+    border: 1px solid #d1d5db;
+    border-radius: 7px;
+    background: #ffffff;
+    color: #374151;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.camera-file-browse-button:hover {
+    background: #f3f4f6;
+    border-color: #9ca3af;
+}
+
+.camera-file-selected,
+.camera-file-current {
+    padding: 10px 12px;
+    border: 1px solid #dbeafe;
+    border-radius: 7px;
+    background: #eff6ff;
+    color: #1e40af;
+    font-size: 12px;
+}
+
+.camera-file-selected {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.camera-file-selected strong {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.camera-file-selected span {
+    flex-shrink: 0;
+    color: #64748b;
+}
+
+.camera-file-help,
+.camera-source-help {
+    color: #6b7280;
+    font-size: 11px;
+    line-height: 1.45;
+}
+
+@media (max-width: 600px) {
+    .camera-file-picker-row {
+        width: 100%;
+    }
+
+    .camera-file-browse-button {
+        width: 100%;
+    }
+
+    .camera-file-selected {
+        flex-direction: column;
+        gap: 4px;
+    }
+}
