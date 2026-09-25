@@ -685,12 +685,6 @@ These folders are intentionally included in GitHub.
 
 ## Backend
 
-The backend can be started using Uvicorn:
-
-```bash
-uvicorn src.api:app --host 127.0.0.1 --port 8000
-```
-
 The backend provides APIs for:
 
 * Authentication
@@ -706,152 +700,6 @@ The health endpoint can be used to check backend and database status:
 ```text
 /health
 ```
-
----
-
-## Frontend
-
-Navigate to the dashboard:
-
-```bash
-cd dashboard
-```
-
-Install dependencies:
-
-```bash
-npm install
-```
-
-Run the development server:
-
-```bash
-npm run dev
-```
-
-Create a production build:
-
-```bash
-npm run build
-```
-
----
-
-# ⚙️ Environment Configuration
-
-Create a local `.env` file using `.env.example` as the reference.
-
-```text
-.env.example
-```
-
-Configure the required environment variables for:
-
-* PostgreSQL database
-* Backend configuration
-* AI/CV configuration
-* Other project-specific settings
-
-Do not commit `.env` files containing credentials or secrets.
-
----
-
-# ▶️ Running the Project
-
-## 1. Clone the Repository
-
-```bash
-git clone https://github.com/NVighnesh/Crowd-management-System.git
-```
-
-```bash
-cd Crowd-management-System
-```
-
----
-
-## 2. Create Python Virtual Environment
-
-Windows PowerShell:
-
-```powershell
-python -m venv .venv
-```
-
-Activate the environment:
-
-```powershell
-.\.venv\Scripts\Activate.ps1
-```
-
----
-
-## 3. Install Backend Dependencies
-
-```powershell
-pip install -r requirements.txt
-```
-
----
-
-## 4. Configure Environment Variables
-
-Create:
-
-```text
-.env
-```
-
-using:
-
-```text
-.env.example
-```
-
-as the reference.
-
-Configure the PostgreSQL database and other required project settings.
-
----
-
-## 5. Start Backend
-
-From the project root:
-
-```powershell
-uvicorn src.api:app --host 127.0.0.1 --port 8000
-```
-
-Backend:
-
-```text
-http://127.0.0.1:8000
-```
-
----
-
-## 6. Start Frontend
-
-Open another terminal:
-
-```powershell
-cd dashboard
-```
-
-Install dependencies:
-
-```powershell
-npm install
-```
-
-Start the development server:
-
-```powershell
-npm run dev
-```
-
-Open the URL displayed by Vite.
-
 ---
 
 # 🔄 Backend Processing Flow
@@ -900,60 +748,6 @@ These include:
 * Efficient retrieval of recent monitoring information
 
 Historical information is retrieved from PostgreSQL instead of repeatedly processing the complete historical dataset on the frontend.
-
----
-
-# 🛡️ Data & Configuration Management
-
-The project uses `.gitignore` to prevent local and generated files from being committed.
-
-Ignored resources include:
-
-```text
-.venv/
-venv/
-__pycache__/
-.env
-data/
-outputs/
-logs/
-*.db
-dashboard/node_modules/
-dashboard/dist/
-.vscode/
-.idea/
-```
-
-The following public project assets are intentionally included:
-
-```text
-View_Outputs/
-trained-sample-videos/
-demo-videos/
-```
-
----
-
-# 🔀 Git & GitHub
-
-The project is maintained using Git and GitHub.
-
-Repository:
-
-https://github.com/NVighnesh/Crowd-management-System
-
-The project uses the `main` branch.
-
-Initial repository setup:
-
-```bash
-git init
-git branch -M main
-git remote add origin https://github.com/NVighnesh/Crowd-management-System.git
-git add .
-git commit -m "Initial project release"
-git push -u origin main
-```
 
 ---
 
@@ -1012,19 +806,24 @@ Through this project, the following concepts were implemented and practiced:
 
 ---
 
-# 👨‍💻 Author
+## 📸 Screenshots
 
-**Vighnesh**
-
-GitHub:
-
-https://github.com/NVighnesh
+**Final Outputs**
+[Click Here](Crowd-management-System/View_Outputs/)
 
 ---
 
-# ⭐ Support
+## 👤 Author
 
-If you find this project useful, consider giving the repository a ⭐ on GitHub.
+**NEDULLA VIGHNESH**  
+- GitHub: [2200032267](https://github.com/NVighnesh)  
+- LinkedIn: [N VIGHNESH](https://www.linkedin.com/in/n-vighnesh-5b74aa24a)  
+- Email:vighneshnv2@gmail.com
+---
+## ⭐ Star This Repository
+
+If you find this project useful or interesting, please ⭐ star this repository to support and encourage further development!  
+Your support means a lot! 🙏
 
 ---
 
