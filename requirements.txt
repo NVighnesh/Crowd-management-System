@@ -4,6 +4,7 @@ uvicorn==0.53.0
 pydantic==2.13.5
 python-multipart==0.0.32
 PyYAML==6.0.3
+python-dotenv==1.2.2
 numpy==2.5.3
 opencv-python==5.0.0.93
 ultralytics==8.4.153
