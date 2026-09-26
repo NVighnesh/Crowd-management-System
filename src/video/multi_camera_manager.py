@@ -308,8 +308,7 @@ class MultiCameraManager:
             else:
                 self._logger.info("Camera %s recovery succeeded", camera_id)
 
-    @staticmethod
-    def _normalize_camera(camera):
+    def _normalize_camera(self, camera):
         if not isinstance(camera, dict):
             raise ValueError("Camera configuration must be an object.")
 

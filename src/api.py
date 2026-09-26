@@ -2326,6 +2326,17 @@ async def update_camera(
         multi_camera_manager.update_camera(
             camera
         )
+    except SupabaseStorageError as exc:
+        LOGGER.warning(
+            "Camera %s update failed while accessing Supabase Storage: %s",
+            camera_id,
+            exc,
+            exc_info=True,
+        )
+        raise HTTPException(
+            status_code=503,
+            detail="Camera video storage is unavailable.",
+        ) from exc
     except ValueError as exc:
         raise HTTPException(
             status_code=400,
