@@ -17,6 +17,7 @@ from src.crowd.result_store import ResultStore
 from src.alerts.alert_manager import AlertManager
 from src.alerts.alert import Alert
 from src.config.settings import resolve_path
+from src.storage.supabase_storage import SupabaseStorage
 
 
 class MultiCameraManager:
@@ -29,6 +30,7 @@ class MultiCameraManager:
         counting_config,
         processing_config,
         camera_manager=None,
+        storage_service=None,
     ):
         self.cameras = list(cameras)
 
@@ -38,6 +40,7 @@ class MultiCameraManager:
         self.processing_config = processing_config
 
         self.camera_manager = camera_manager
+        self.storage_service = storage_service or SupabaseStorage()
 
         self.pipelines = {}
         self.workers = {}
@@ -184,6 +187,7 @@ class MultiCameraManager:
                 ),
                 zones_config=zones_config,
                 processing_config=self.processing_config,
+                storage_service=self.storage_service,
             )
 
             try:
@@ -323,7 +327,10 @@ class MultiCameraManager:
         if not source:
             raise ValueError("Camera source cannot be empty.")
 
-        if source_type == "file" and not resolve_path(source).is_file():
+        if source_type == "file" and self.storage_service.is_storage_source(source):
+            if not self.storage_service.configured:
+                raise ValueError("Supabase Storage is not configured for camera source.")
+        elif source_type == "file" and not resolve_path(source).is_file():
             raise ValueError(f"Camera source file not found: {source}")
 
         if source_type == "rtsp":
@@ -342,6 +349,9 @@ class MultiCameraManager:
                     raise ValueError(
                         "Drone RTSP source must include a host."
                     )
+            elif self.storage_service.is_storage_source(source):
+                if not self.storage_service.configured:
+                    raise ValueError("Supabase Storage is not configured for camera source.")
             elif not resolve_path(source).is_file():
                 raise ValueError(
                     f"Drone camera source file not found: {source}"

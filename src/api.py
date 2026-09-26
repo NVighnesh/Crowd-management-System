@@ -29,6 +29,7 @@ from src.security.auth import (
     AuthenticatedUser,
     InactiveAccountError,
 )
+from src.storage.supabase_storage import SupabaseStorage, SupabaseStorageError
 
 
 camera_manager = None
@@ -37,9 +38,9 @@ system_overview_service = None
 database_service = None
 system_health_service = None
 auth_service = None
+storage_service = None
 LOGGER = logging.getLogger(__name__)
 
-VIDEO_UPLOAD_DIR = PROJECT_ROOT / "data" / "camera_uploads"
 SUPPORTED_VIDEO_EXTENSIONS = {
     ".mp4",
     ".avi",
@@ -153,17 +154,6 @@ async def _save_uploaded_camera_video(camera_id: str, upload) -> str:
             ),
         )
 
-    VIDEO_UPLOAD_DIR.mkdir(
-        parents=True,
-        exist_ok=True,
-    )
-
-    stored_name = _safe_upload_filename(
-        camera_id,
-        filename,
-    )
-    stored_path = VIDEO_UPLOAD_DIR / stored_name
-
     content = await upload.read()
 
     if not content:
@@ -172,11 +162,17 @@ async def _save_uploaded_camera_video(camera_id: str, upload) -> str:
             detail="Uploaded video file is empty.",
         )
 
-    stored_path.write_bytes(content)
-
-    return str(
-        stored_path.relative_to(PROJECT_ROOT)
-    )
+    if storage_service is None:
+        raise HTTPException(status_code=503, detail="Storage service is not available.")
+    try:
+        return storage_service.upload_file(
+            camera_id=camera_id,
+            filename=filename,
+            content=content,
+            content_type=getattr(upload, "content_type", None) or "application/octet-stream",
+        )
+    except SupabaseStorageError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
 
 
 async def _read_camera_update_payload(
@@ -325,6 +321,7 @@ async def lifespan(app: FastAPI):
     global database_service
     global system_health_service
     global auth_service
+    global storage_service
 
     config = load_config()
 
@@ -337,6 +334,7 @@ async def lifespan(app: FastAPI):
             in {"1", "true", "yes", "on"}
         )
     database_service = DatabaseService()
+    storage_service = SupabaseStorage()
     auth_service = AuthService(security_config, database_service.database)
 
     # PostgreSQL is the runtime source of truth for cameras. Empty databases
@@ -370,6 +368,7 @@ async def lifespan(app: FastAPI):
         counting_config=config["counting"],
         processing_config=config["processing"],
         camera_manager=camera_manager,
+        storage_service=storage_service,
     )
 
     multi_camera_manager.setup()
@@ -397,6 +396,7 @@ async def lifespan(app: FastAPI):
 
     system_health_service = None
     auth_service = None
+    storage_service = None
 
     print("Crowd Management API stopped.")
 
@@ -2337,6 +2337,20 @@ async def update_camera(
             detail=f"Failed to update camera: {exc}",
         )
 
+    if (
+        storage_service is not None
+        and existing.get("source") != payload["source"]
+        and storage_service.is_storage_source(existing.get("source"))
+    ):
+        try:
+            storage_service.delete(existing["source"])
+        except SupabaseStorageError:
+            LOGGER.warning(
+                "Camera %s was updated, but its previous storage object could not be deleted.",
+                camera_id,
+                exc_info=True,
+            )
+
     return {
         "message": "Camera updated successfully.",
         "camera": {
@@ -2380,6 +2394,16 @@ def delete_camera(camera_id: str):
             status_code=500,
             detail=f"Failed to delete camera: {exc}",
         )
+
+    if storage_service is not None and storage_service.is_storage_source(existing.get("source")):
+        try:
+            storage_service.delete(existing["source"])
+        except SupabaseStorageError:
+            LOGGER.error(
+                "Camera %s was deleted, but its storage object could not be deleted.",
+                camera_id,
+                exc_info=True,
+            )
 
     return {
         "message": "Camera deleted successfully.",

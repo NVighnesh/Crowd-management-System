@@ -1,4 +1,5 @@
 from src.config.settings import resolve_path
+from src.storage.supabase_storage import SupabaseStorage
 
 from src.video.file_source import FileVideoSource
 from src.video.rtsp_source import RTSPVideoSource
@@ -22,12 +23,15 @@ class CameraPipeline:
         counting_config=None,
         zones_config=None,
         processing_config=None,
+        storage_service=None,
     ):
         self.camera_config = camera_config
         self.inference_config = inference_config
         self.tracking_config = tracking_config
         self.counting_config = counting_config
         self.processing_config = processing_config or {}
+        self.storage_service = storage_service or SupabaseStorage()
+        self.temp_source_path = None
 
         self.zones_config = (
             zones_config
@@ -59,10 +63,13 @@ class CameraPipeline:
         # --------------------------------------------------
 
         if source_type == "file":
-
-            source_path = str(
-                resolve_path(source)
-            )
+            if self.storage_service.is_storage_source(source):
+                self.temp_source_path = self.storage_service.download_to_temp(
+                    source, self.camera_config["id"]
+                )
+                source_path = str(self.temp_source_path)
+            else:
+                source_path = str(resolve_path(source))
 
             self.source = FileVideoSource(
                 source_path,
@@ -108,6 +115,14 @@ class CameraPipeline:
                         "rtsp_backend",
                         "any",
                     ),
+                )
+            elif self.storage_service.is_storage_source(source):
+                self.temp_source_path = self.storage_service.download_to_temp(
+                    source, self.camera_config["id"]
+                )
+                self.source = FileVideoSource(
+                    str(self.temp_source_path),
+                    loop=loop,
                 )
             else:
                 self.source = FileVideoSource(
@@ -281,6 +296,10 @@ class CameraPipeline:
             self.source.release()
 
             self.source = None
+
+        if self.temp_source_path is not None:
+            self.temp_source_path.unlink(missing_ok=True)
+            self.temp_source_path = None
 
         self.engine = None
         self.zone_manager = None
