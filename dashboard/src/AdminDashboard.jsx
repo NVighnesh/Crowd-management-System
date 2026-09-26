@@ -5,6 +5,7 @@ import { clearSession } from "./auth";
 import "./dashboard.css";
 import "./AdminDashboard.css";
 import Icon from "./Icon";
+import { API_BASE_URL } from "./apiBase";
 
 export default function AdminDashboard() {
     const navigate = useNavigate();
@@ -18,7 +19,7 @@ export default function AdminDashboard() {
 
     useEffect(() => {
         let cancelled = false;
-        fetch("http://127.0.0.1:8000/admin/alerts/count")
+        fetch(`${API_BASE_URL}/admin/alerts/count`)
             .then((response) => {
                 if (!response.ok) {
                     throw new Error(`Failed to fetch alert count: ${response.status}`);

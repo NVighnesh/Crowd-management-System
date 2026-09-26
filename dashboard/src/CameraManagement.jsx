@@ -1,9 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import "./CameraManagementSource.css";
-
-
-const API_BASE_URL = "http://127.0.0.1:8000";
+import { API_BASE_URL } from "./apiBase";
 
 function getSourceBasename(source) {
     if (!source) {

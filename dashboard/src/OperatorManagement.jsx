@@ -1,8 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { setSelectedOperator } from "./auth";
 import Icon from "./Icon";
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000";
+import { API_BASE_URL } from "./apiBase";
 
 export default function OperatorManagement({ onManage }) {
     const [operators, setOperators] = useState([]);

@@ -1,8 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { getToken } from "./auth";
 import Icon from "./Icon";
-
-const API_BASE_URL = "http://127.0.0.1:8000";
+import { API_BASE_URL } from "./apiBase";
 
 const EMPTY_FORM = {
     zone_id: "",

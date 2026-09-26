@@ -1,4 +1,4 @@
-const API_BASE_URL = "http://127.0.0.1:8000";
+import { API_BASE_URL } from "./apiBase";
 const TOKEN_KEY = "crowd_access_token";
 const ROLE_KEY = "crowd_role";
 const USERNAME_KEY = "crowd_username";

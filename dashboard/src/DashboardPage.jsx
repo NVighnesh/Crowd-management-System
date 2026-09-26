@@ -13,8 +13,7 @@ import "./dashboard.css";
 import { useNavigate, useParams } from "react-router-dom";
 import { clearSession, getRole, getToken, getUsername } from "./auth";
 import Icon from "./Icon";
-
-const API_BASE_URL = "http://127.0.0.1:8000";
+import { API_BASE_URL } from "./apiBase";
 
 function App() {
     const [overview, setOverview] = useState(null);
