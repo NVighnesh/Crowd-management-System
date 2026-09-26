@@ -1363,9 +1363,18 @@ def get_system_overview(request: Request):
     ]
     return {
         "total_cameras": len(cameras),
-        "online_cameras": sum(1 for c in cameras if c.get("status") == "online"),
-        "offline_cameras": sum(1 for c in cameras if c.get("status") == "offline"),
-        "stale_cameras": sum(1 for c in cameras if c.get("stale")),
+        "online_cameras": sum(
+            1 for camera in cameras
+            if str(camera.get("status", "")).upper() == "ONLINE"
+        ),
+        "offline_cameras": sum(
+            1 for camera in cameras
+            if str(camera.get("status", "")).upper() not in {"ONLINE", "STALE"}
+        ),
+        "stale_cameras": sum(
+            1 for camera in cameras
+            if str(camera.get("status", "")).upper() == "STALE"
+        ),
         "total_people": overview.total_people,
         "total_alerts": len(alerts) if owner_id is not None else overview.total_alerts,
         "cameras": cameras,

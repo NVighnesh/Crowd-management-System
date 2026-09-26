@@ -45,7 +45,27 @@ class SystemOverviewService:
             )
 
             if worker is None:
-
+                offline_cameras += 1
+                camera_data.append(
+                    {
+                        "camera_id": camera_id,
+                        "camera_name": camera.get(
+                            "name",
+                            camera_id,
+                        ),
+                        "owner_id": camera.get("owner_id"),
+                        "status": "OFFLINE",
+                        "processing_status": "OFFLINE",
+                        "last_error": "Camera worker is not running.",
+                        "last_frame_time": None,
+                        "last_inference_time": None,
+                        "result_timestamp": None,
+                        "age_seconds": None,
+                        "fresh": False,
+                        "total_people": None,
+                        "zones": [],
+                    }
+                )
                 continue
 
             status = worker.get_status()
