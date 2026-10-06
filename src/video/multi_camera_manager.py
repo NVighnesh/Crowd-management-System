@@ -159,7 +159,7 @@ class MultiCameraManager:
     # START CAMERA
     # --------------------------------------------------
 
-    def _start_camera(self, camera):
+    def _start_camera(self, camera, zones_config=None):
 
         camera = self._normalize_camera(camera)
         camera_id = camera["id"]
@@ -169,10 +169,8 @@ class MultiCameraManager:
             if camera_id in self.workers:
                 return
 
-            zones_config = (
-                self.zone_repository
-                .get_by_camera(camera_id)
-            )
+            if zones_config is None:
+                zones_config = self.zone_repository.get_by_camera(camera_id)
 
             pipeline = CameraPipeline(
                 camera_config=camera,
@@ -483,6 +481,10 @@ class MultiCameraManager:
                 source_type != previous["source_type"]
                 or source != previous["source"]
             ))
+            source_replaced = (
+                updated["source_type"] != previous["source_type"]
+                or updated["source"] != previous["source"]
+            )
 
             runtime = self.get_camera(camera_id)
             was_running = camera_id in self.workers
@@ -493,6 +495,15 @@ class MultiCameraManager:
                     for field in ("source_type", "source", "loop", "enabled")
                 )
             )
+
+            if source_replaced:
+                self._replace_camera_source(
+                    previous=previous,
+                    updated=updated,
+                    runtime=runtime,
+                    was_running=was_running,
+                )
+                return
 
             try:
                 self._persist_camera(updated)
@@ -521,6 +532,80 @@ class MultiCameraManager:
                     self._start_camera(previous)
                 self._sync_camera_manager()
                 raise
+
+    def _replace_camera_source(
+        self,
+        previous,
+        updated,
+        runtime,
+        was_running,
+    ):
+        camera_id = updated["id"]
+        previous_result = self.result_store.get_with_timestamp(camera_id)
+        self.stop_camera(camera_id)
+
+        try:
+            with self.database.transaction() as connection:
+                connection.execute(
+                    "DELETE FROM alerts WHERE camera_id = %s",
+                    (camera_id,),
+                )
+                connection.execute(
+                    "DELETE FROM zone_results WHERE camera_id = %s",
+                    (camera_id,),
+                )
+                connection.execute(
+                    "DELETE FROM zones WHERE camera_id = %s",
+                    (camera_id,),
+                )
+                connection.execute(
+                    """
+                    UPDATE cameras
+                    SET
+                        camera_name = %s,
+                        source_type = %s,
+                        source = %s,
+                        loop = %s,
+                        enabled = %s,
+                        owner_id = COALESCE(%s, owner_id),
+                        updated_at = CURRENT_TIMESTAMP
+                    WHERE camera_id = %s
+                    """,
+                    (
+                        updated["name"],
+                        updated["source_type"],
+                        updated["source"],
+                        updated["loop"],
+                        updated["enabled"],
+                        updated.get("owner_id"),
+                        camera_id,
+                    ),
+                )
+
+                if updated["enabled"]:
+                    self._start_camera(updated, zones_config=[])
+
+                if runtime is not None:
+                    runtime.clear()
+                    runtime.update(updated)
+                else:
+                    self.cameras.append(updated)
+                self.alert_manager.reset_camera(camera_id)
+                self.result_store.remove(camera_id)
+        except Exception:
+            self.stop_camera(camera_id)
+            self.result_store.restore(camera_id, previous_result)
+            if was_running and previous["enabled"]:
+                try:
+                    self._start_camera(previous)
+                except Exception:
+                    self._logger.exception(
+                        "Camera %s could not be restored after source replacement failed.",
+                        camera_id,
+                    )
+            raise
+
+        self._sync_camera_manager()
 
     def enable_camera(self, camera_id):
         with self._manager_lock:

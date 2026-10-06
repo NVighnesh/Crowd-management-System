@@ -126,6 +126,14 @@ class AlertManager:
             zone_id=zone_id,
         )
 
+    def reset_camera(self, camera_id):
+        self.store.remove_by_camera(camera_id)
+        self.engine._previous_status = {
+            key: status
+            for key, status in self.engine._previous_status.items()
+            if key[0] != camera_id
+        }
+
     # --------------------------------------------------
     # Reset everything
     # --------------------------------------------------

@@ -120,6 +120,14 @@ class AlertStore:
                 )
             ]
 
+    def remove_by_camera(self, camera_id: str):
+        with self._lock:
+            self._alerts = [
+                alert
+                for alert in self._alerts
+                if alert.camera_id != camera_id
+            ]
+
     # --------------------------------------------------
     # Number of stored alerts
     # --------------------------------------------------

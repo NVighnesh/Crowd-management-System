@@ -56,6 +56,13 @@ class ResultStore:
 
             self._results.pop(camera_id, None)
 
+    def restore(self, camera_id, entry):
+        if entry is None:
+            return
+
+        with self._lock:
+            self._results[camera_id] = dict(entry)
+
     def clear(self):
 
         with self._lock:
