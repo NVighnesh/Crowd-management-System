@@ -1,4 +1,5 @@
 import logging
+from pathlib import Path
 
 from src.config.settings import resolve_path
 from src.storage.supabase_storage import SupabaseStorage
@@ -82,6 +83,11 @@ class CameraPipeline:
                     self.camera_config["id"],
                     self.temp_source_path,
                 )
+                self._logger.info(
+                    "Camera %s temporary source size=%d bytes",
+                    self.camera_config["id"],
+                    Path(self.temp_source_path).stat().st_size,
+                )
                 source_path = str(self.temp_source_path)
             else:
                 source_path = str(resolve_path(source))
@@ -159,8 +165,11 @@ class CameraPipeline:
                     f"Unable to open camera source: {source}"
                 )
             self._logger.info(
-                "Camera %s VideoCapture opened successfully",
+                "Camera %s VideoCapture opened successfully width=%s height=%s fps=%s",
                 self.camera_config["id"],
+                self.source.cap.get(3) if hasattr(self.source, "cap") else None,
+                self.source.cap.get(4) if hasattr(self.source, "cap") else None,
+                self.source.cap.get(5) if hasattr(self.source, "cap") else None,
             )
         except Exception:
             self._logger.exception(
@@ -178,6 +187,10 @@ class CameraPipeline:
         self.engine = InferenceFactory.create_engine(
             inference_config=self.inference_config,
             tracking_config=self.tracking_config,
+        )
+        self._logger.info(
+            "Camera %s YOLO/inference engine initialized",
+            self.camera_config["id"],
         )
 
         # --------------------------------------------------

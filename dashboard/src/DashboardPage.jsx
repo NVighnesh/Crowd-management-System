@@ -70,6 +70,8 @@ function App() {
         let isMounted = true;
         let requestInFlight = false;
         const controller = new AbortController();
+        let retryDelay = 7000;
+        let timerId = null;
 
         async function loadDashboardData(includeConfiguredZones = false) {
             if (requestInFlight || !isMounted) {
@@ -180,28 +182,37 @@ function App() {
                     );
                     setError(null);
                     setLoading(false);
+                    retryDelay = 7000;
                 }
             } catch (err) {
                 if (isMounted && err.name !== "AbortError") {
                     setError(err.message);
+                    setAlerts([]);
                     setLoading(false);
+                    retryDelay = Math.min(
+                        retryDelay * 2,
+                        60000
+                    );
                 }
             } finally {
                 requestInFlight = false;
+                if (isMounted) {
+                    timerId = window.setTimeout(
+                        () => loadDashboardData(false),
+                        retryDelay
+                    );
+                }
             }
         }
 
         loadDashboardData(true);
 
-        const intervalId = setInterval(
-            loadDashboardData,
-            7000
-        );
-
         return () => {
             isMounted = false;
             controller.abort();
-            clearInterval(intervalId);
+            if (timerId !== null) {
+                window.clearTimeout(timerId);
+            }
         };
     }, []);
 

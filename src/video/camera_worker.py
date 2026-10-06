@@ -274,6 +274,10 @@ class CameraWorker:
                 self.processing_status = "ERROR"
 
                 self.last_error = str(exc)
+            self._logger.exception(
+                "Camera %s inference failed",
+                self.pipeline.camera_config.get("id", "unknown"),
+            )
 
     # --------------------------------------------------
     # Manual inference

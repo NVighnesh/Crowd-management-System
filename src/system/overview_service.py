@@ -1,3 +1,5 @@
+import logging
+
 from src.system.overview import SystemOverview
 
 
@@ -15,6 +17,7 @@ class SystemOverviewService:
             multi_camera_manager
         )
         self.database_service = database_service
+        self._logger = logging.getLogger(__name__)
 
     # --------------------------------------------------
     # Build complete system overview
@@ -68,7 +71,35 @@ class SystemOverviewService:
                 )
                 continue
 
-            status = worker.get_status()
+            try:
+                status = worker.get_status()
+            except Exception as exc:
+                self._logger.exception(
+                    "Unable to read status for camera %s",
+                    camera_id,
+                )
+                offline_cameras += 1
+                camera_data.append(
+                    {
+                        "camera_id": camera_id,
+                        "camera_name": camera.get(
+                            "name",
+                            camera_id,
+                        ),
+                        "owner_id": camera.get("owner_id"),
+                        "status": "ERROR",
+                        "processing_status": "ERROR",
+                        "last_error": str(exc),
+                        "last_frame_time": None,
+                        "last_inference_time": None,
+                        "result_timestamp": None,
+                        "age_seconds": None,
+                        "fresh": False,
+                        "total_people": None,
+                        "zones": [],
+                    }
+                )
+                continue
 
             camera_status = status[
                 "status"

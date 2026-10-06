@@ -9,6 +9,7 @@ from fastapi.responses import JSONResponse
 import os
 import logging
 import re
+import time
 
 from src.config.settings import load_config
 from src.config.settings import PROJECT_ROOT
@@ -1183,6 +1184,36 @@ def get_camera_stream(camera_id: str):
         "processing_config",
         {},
     )
+    startup_timeout = max(
+        1.0,
+        float(
+            processing_config.get(
+                "stream_start_timeout_seconds",
+                15,
+            )
+        ),
+    )
+    deadline = time.monotonic() + startup_timeout
+    while worker.get_latest_annotated_frame() is None:
+        if time.monotonic() >= deadline:
+            raise HTTPException(
+                status_code=503,
+                detail=(
+                    f"Camera {camera_id} did not produce a stream frame "
+                    f"within {startup_timeout:g} seconds."
+                ),
+            )
+        current_status = worker.get_status()
+        if current_status.get("status") not in {"ONLINE", "STARTING"}:
+            raise HTTPException(
+                status_code=503,
+                detail=(
+                    f"Camera {camera_id} failed during stream startup: "
+                    f"{current_status.get('last_error') or 'worker unavailable'}"
+                ),
+            )
+        time.sleep(0.1)
+
     streamer = FrameStreamer(
         worker=worker,
         jpeg_quality=int(

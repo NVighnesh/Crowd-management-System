@@ -179,6 +179,9 @@ def test_frame_streamer_reuses_worker_annotated_frame():
 
 def test_stream_endpoint_waits_for_starting_worker_without_frame(monkeypatch):
     class Worker:
+        def __init__(self):
+            self.calls = 0
+
         def get_status(self):
             return {
                 "status": "STARTING",
@@ -186,7 +189,12 @@ def test_stream_endpoint_waits_for_starting_worker_without_frame(monkeypatch):
             }
 
         def get_latest_annotated_frame(self):
-            return None
+            self.calls += 1
+            return (
+                np.zeros((20, 20, 3), dtype=np.uint8)
+                if self.calls >= 2
+                else None
+            )
 
     manager = type("Manager", (), {"workers": {"CAM_VIS": Worker()}})()
 

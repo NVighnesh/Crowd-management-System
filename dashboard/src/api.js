@@ -4,9 +4,11 @@ async function fetchJson(url, errorMessage, options = {}) {
     const response = await fetch(url, options);
 
     if (!response.ok) {
-        throw new Error(
+        const error = new Error(
             `${errorMessage}: ${response.status}`
         );
+        error.status = response.status;
+        throw error;
     }
 
     return response.json();
