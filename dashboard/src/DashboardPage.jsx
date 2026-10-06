@@ -68,164 +68,139 @@ function App() {
 
     useEffect(() => {
         let isMounted = true;
+        let requestInFlight = false;
+        const controller = new AbortController();
 
-        async function loadDashboardData() {
+        async function loadDashboardData(includeConfiguredZones = false) {
+            if (requestInFlight || !isMounted) {
+                return;
+            }
+
+            requestInFlight = true;
             try {
-                const overviewData = await getSystemOverview();
-
+                const overviewData = await getSystemOverview({
+                    signal: controller.signal,
+                });
                 const cameras = overviewData.cameras || [];
-                const liveAlerts = await loadAllLiveAlerts(cameras);
+                let normalizedCameras = cameras;
 
-                /*
-                 * The live overview may contain runtime zone results, while
-                 * the zone-management API contains the saved zone definitions.
-                 * Keep both sources together so the dashboard always displays
-                 * every configured zone, even when a live result temporarily
-                 * does not include its zone list.
-                 */
-                const zoneResponses = await Promise.all(
-                    cameras.map(async (camera) => {
-                        try {
+                if (includeConfiguredZones) {
+                    const zoneResponses = await Promise.all(
+                        cameras.map(async (camera) => {
                             const response = await fetch(
-                                `${API_BASE_URL}/cameras/${camera.camera_id}/zones`
+                                `${API_BASE_URL}/cameras/${camera.camera_id}/zones`,
+                                { signal: controller.signal }
                             );
-
                             if (!response.ok) {
-                                return {
-                                    cameraId: camera.camera_id,
-                                    zones: [],
-                                };
+                                throw new Error(
+                                    `Failed to load zones for ${camera.camera_id}.`
+                                );
                             }
-
                             const data = await response.json();
-
                             return {
                                 cameraId: camera.camera_id,
                                 zones: Array.isArray(data.zones)
                                     ? data.zones
                                     : [],
                             };
-                        } catch {
-                            return {
-                                cameraId: camera.camera_id,
-                                zones: [],
-                            };
-                        }
-                    })
-                );
-
-                const configuredZoneMap = {};
-
-                zoneResponses.forEach((item) => {
-                    configuredZoneMap[item.cameraId] = item.zones;
-                });
-
-                const normalizedCameras = cameras.map((camera) => {
-                    const runtimeZones = Array.isArray(camera.zones)
-                        ? camera.zones
-                        : [];
-
-                    const configuredZones =
-                        configuredZoneMap[camera.camera_id] || [];
-
-                    const runtimeZoneMap = new Map(
-                        runtimeZones.map((zone) => [
-                            zone.zone_id,
-                            zone,
+                        })
+                    );
+                    const configuredZoneMap = Object.fromEntries(
+                        zoneResponses.map((item) => [
+                            item.cameraId,
+                            item.zones,
                         ])
                     );
 
-                    const mergedZones = configuredZones.map((zone) => {
-                        const runtimeZone = runtimeZoneMap.get(
-                            zone.zone_id
-                        );
-
-                        return {
-                            ...zone,
-                            name:
-                                runtimeZone?.name ||
-                                zone.zone_name ||
-                                zone.name ||
+                    normalizedCameras = cameras.map((camera) => {
+                        const runtimeZones = Array.isArray(camera.zones)
+                            ? camera.zones
+                            : [];
+                        const configuredZones =
+                            configuredZoneMap[camera.camera_id] || [];
+                        const runtimeZoneMap = new Map(
+                            runtimeZones.map((zone) => [
                                 zone.zone_id,
-                            count:
-                                runtimeZone?.count ??
-                                zone.count ??
-                                0,
-                            threshold:
-                                runtimeZone?.threshold ??
-                                zone.threshold ??
-                                0,
-                            status:
-                                runtimeZone?.status ||
-                                zone.status ||
-                                "GREEN",
-                            enabled:
-                                zone.enabled !== undefined
-                                    ? zone.enabled
-                                    : true,
-                        };
-                    });
-
-                    /* Preserve any live zone result that is not yet present
-                       in the saved configuration response. */
-                    runtimeZones.forEach((runtimeZone) => {
-                        if (
-                            !mergedZones.some(
-                                (zone) =>
-                                    zone.zone_id ===
-                                    runtimeZone.zone_id
-                            )
-                        ) {
-                            mergedZones.push({
-                                ...runtimeZone,
+                                zone,
+                            ])
+                        );
+                        const mergedZones = configuredZones.map((zone) => {
+                            const runtimeZone = runtimeZoneMap.get(
+                                zone.zone_id
+                            );
+                            return {
+                                ...zone,
                                 name:
-                                    runtimeZone.name ||
-                                    runtimeZone.zone_id,
+                                    runtimeZone?.name ||
+                                    zone.zone_name ||
+                                    zone.name ||
+                                    zone.zone_id,
                                 count:
-                                    runtimeZone.count ?? 0,
+                                    runtimeZone?.count ??
+                                    zone.count ??
+                                    0,
                                 threshold:
-                                    runtimeZone.threshold ?? 0,
+                                    runtimeZone?.threshold ??
+                                    zone.threshold ??
+                                    0,
                                 status:
-                                    runtimeZone.status ||
+                                    runtimeZone?.status ||
+                                    zone.status ||
                                     "GREEN",
-                            });
-                        }
+                                enabled:
+                                    zone.enabled !== undefined
+                                        ? zone.enabled
+                                        : true,
+                            };
+                        });
+                        runtimeZones.forEach((runtimeZone) => {
+                            if (
+                                !mergedZones.some(
+                                    (zone) =>
+                                        zone.zone_id ===
+                                        runtimeZone.zone_id
+                                )
+                            ) {
+                                mergedZones.push(runtimeZone);
+                            }
+                        });
+                        return { ...camera, zones: mergedZones };
                     });
-
-                    return {
-                        ...camera,
-                        zones: mergedZones,
-                    };
-                });
-
-                const normalizedOverview = {
-                    ...overviewData,
-                    cameras: normalizedCameras,
-                };
+                }
 
                 if (isMounted) {
-                    setOverview(normalizedOverview);
-                    setAlerts(liveAlerts);
+                    setOverview({
+                        ...overviewData,
+                        cameras: normalizedCameras,
+                    });
+                    setAlerts(
+                        Array.isArray(overviewData.alerts)
+                            ? overviewData.alerts
+                            : []
+                    );
                     setError(null);
                     setLoading(false);
                 }
             } catch (err) {
-                if (isMounted) {
+                if (isMounted && err.name !== "AbortError") {
                     setError(err.message);
                     setLoading(false);
                 }
+            } finally {
+                requestInFlight = false;
             }
         }
 
-        loadDashboardData();
+        loadDashboardData(true);
 
         const intervalId = setInterval(
             loadDashboardData,
-            2000
+            7000
         );
 
         return () => {
             isMounted = false;
+            controller.abort();
             clearInterval(intervalId);
         };
     }, []);
@@ -245,7 +220,7 @@ function App() {
                 loadCameraHistory(camera);
             }
         }
-    }, [routeCameraId, overview]);
+    }, [routeCameraId, overview?.cameras?.length]);
 
     async function loadCameraHistory(camera) {
         if (!camera) {
@@ -260,9 +235,6 @@ function App() {
                 camera.camera_id,
                 20
             );
-
-            const cameraAlerts = (await loadAllLiveAlerts([camera]))
-                .slice(0, 100);
 
             const zoneHistoryData = await getCameraZoneHistory(
                 camera.camera_id,
@@ -286,14 +258,6 @@ function App() {
 
             setCameraAlertHistory(
                 databaseAlerts.alerts || []
-            );
-
-            // Keep the focused camera's live alerts independent from the
-            // dashboard-wide list so every zone for this camera is shown.
-            setCameraAlertHistory((previous) =>
-                previous.length > 0
-                    ? previous
-                    : cameraAlerts
             );
 
             setZoneHistories(
@@ -397,50 +361,6 @@ function App() {
             ? `?stream_token=${encodeURIComponent(streamToken)}`
             : "";
         return `${API_BASE_URL}/cameras/${cameraId}/stream${query}`;
-    }
-
-    async function loadAllLiveAlerts(cameras) {
-        const responses = await Promise.all(
-            cameras.map(async (camera) => {
-                try {
-                    const response = await fetch(
-                        `${API_BASE_URL}/cameras/${camera.camera_id}/alerts`
-                    );
-
-                    if (!response.ok) {
-                        return [];
-                    }
-
-                    const data = await response.json();
-                    return Array.isArray(data.alerts)
-                        ? data.alerts
-                        : [];
-                } catch {
-                    return [];
-                }
-            })
-        );
-
-        const seen = new Set();
-        return responses
-            .flat()
-            .filter((alert) => {
-                const key =
-                    alert.id ??
-                    `${alert.camera_id}|${alert.zone_id}|${alert.timestamp}|${alert.alert_type}|${alert.count}`;
-
-                if (seen.has(key)) {
-                    return false;
-                }
-
-                seen.add(key);
-                return true;
-            })
-            .sort(
-                (a, b) =>
-                    new Date(b.timestamp || 0).getTime() -
-                    new Date(a.timestamp || 0).getTime()
-            );
     }
 
     function formatAge(age) {

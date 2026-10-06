@@ -1,7 +1,7 @@
 import { API_BASE_URL } from "./apiBase";
 
-async function fetchJson(url, errorMessage) {
-    const response = await fetch(url);
+async function fetchJson(url, errorMessage, options = {}) {
+    const response = await fetch(url, options);
 
     if (!response.ok) {
         throw new Error(
@@ -12,10 +12,11 @@ async function fetchJson(url, errorMessage) {
     return response.json();
 }
 
-export async function getSystemOverview() {
+export async function getSystemOverview(options = {}) {
     return fetchJson(
         `${API_BASE_URL}/system/overview`,
-        "Failed to fetch system overview"
+        "Failed to fetch system overview",
+        options
     );
 }
 
