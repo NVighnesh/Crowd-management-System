@@ -1158,6 +1158,13 @@ def get_camera_stream(camera_id: str):
         )
 
     status = worker.get_status()
+    LOGGER.info(
+        "Camera %s stream requested status=%s processing=%s frame_available=%s",
+        camera_id,
+        status.get("status"),
+        status.get("processing_status"),
+        worker.get_latest_annotated_frame() is not None,
+    )
 
     if status["status"] not in {
         "ONLINE",
@@ -1169,12 +1176,6 @@ def get_camera_stream(camera_id: str):
                 f"Camera {camera_id} "
                 f"is not available."
             ),
-        )
-
-    if worker.get_latest_annotated_frame() is None:
-        raise HTTPException(
-            status_code=503,
-            detail="Annotated frame is not available yet.",
         )
 
     processing_config = getattr(

@@ -1,3 +1,4 @@
+import logging
 import threading
 import time
 
@@ -79,6 +80,7 @@ class CameraWorker:
         # --------------------------------------------------
 
         self._state_lock = threading.Lock()
+        self._logger = logging.getLogger(__name__)
 
     # --------------------------------------------------
     # Start
@@ -109,6 +111,10 @@ class CameraWorker:
 
         self.capture_thread.start()
         self.inference_thread.start()
+        self._logger.info(
+            "Camera worker started for %s",
+            self.pipeline.camera_config.get("id", "unknown"),
+        )
 
     # --------------------------------------------------
     # Capture loop
@@ -143,6 +149,11 @@ class CameraWorker:
                     self.consecutive_frame_failures = 0
 
                     self.status = "ONLINE"
+                    if self.total_frames_captured == 1:
+                        self._logger.info(
+                            "Camera %s captured its first frame",
+                            self.pipeline.camera_config.get("id", "unknown"),
+                        )
 
                 else:
                     self.consecutive_frame_failures += 1
@@ -250,6 +261,11 @@ class CameraWorker:
             ):
 
                 self.result_callback(result)
+                if self.total_inferences == 1:
+                    self._logger.info(
+                        "Camera %s produced its first inference result",
+                        self.pipeline.camera_config.get("id", "unknown"),
+                    )
 
         except Exception as exc:
 

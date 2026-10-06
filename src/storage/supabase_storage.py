@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 import re
 import tempfile
@@ -17,6 +18,7 @@ class SupabaseStorageError(RuntimeError):
 
 class SupabaseStorage:
     def __init__(self, url=None, service_role_key=None, bucket=None):
+        self._logger = logging.getLogger(__name__)
         self.url = (url or os.getenv("SUPABASE_URL", "")).rstrip("/")
         self.service_role_key = service_role_key or os.getenv(
             "SUPABASE_SERVICE_ROLE_KEY", ""
@@ -99,6 +101,12 @@ class SupabaseStorage:
 
     def download_to_temp(self, source, camera_id):
         bucket, object_path = self.parse_source(source)
+        self._logger.info(
+            "Downloading Supabase camera source camera=%s bucket=%s object=%s",
+            camera_id,
+            bucket,
+            object_path,
+        )
         encoded = "/".join(quote(part, safe="") for part in object_path.split("/"))
         content = self._request(
             "GET", f"object/{quote(bucket, safe='')}/{encoded}"
@@ -115,6 +123,11 @@ class SupabaseStorage:
             temp_file.close()
             Path(temp_file.name).unlink(missing_ok=True)
             raise
+        self._logger.info(
+            "Supabase camera source downloaded camera=%s temp_path=%s",
+            camera_id,
+            temp_file.name,
+        )
         return Path(temp_file.name)
 
     def exists(self, source):

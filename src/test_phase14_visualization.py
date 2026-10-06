@@ -177,7 +177,7 @@ def test_frame_streamer_reuses_worker_annotated_frame():
     assert b"\xff\xd9" in chunk
 
 
-def test_stream_endpoint_returns_503_when_frame_is_unavailable(monkeypatch):
+def test_stream_endpoint_waits_for_starting_worker_without_frame(monkeypatch):
     class Worker:
         def get_status(self):
             return {
@@ -190,17 +190,22 @@ def test_stream_endpoint_returns_503_when_frame_is_unavailable(monkeypatch):
 
     manager = type("Manager", (), {"workers": {"CAM_VIS": Worker()}})()
 
+    class FakeStreamer:
+        def __init__(self, **kwargs):
+            pass
+
+        def generate(self):
+            yield b"first-frame"
+
     monkeypatch.setenv("CROWD_SECURITY_ENABLED", "false")
     with TestClient(api.app) as client:
         original_manager = api.multi_camera_manager
         monkeypatch.setattr(api, "multi_camera_manager", manager)
+        monkeypatch.setattr(api, "FrameStreamer", FakeStreamer)
         response = client.get("/cameras/CAM_VIS/stream")
         monkeypatch.setattr(api, "multi_camera_manager", original_manager)
 
-    assert response.status_code == 503
-    assert response.json()["detail"] == (
-        "Annotated frame is not available yet."
-    )
+    assert response.status_code == 200
 
 
 def test_stream_endpoint_returns_404_for_unknown_camera(monkeypatch):

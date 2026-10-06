@@ -1,3 +1,5 @@
+import logging
+
 from src.config.settings import resolve_path
 from src.storage.supabase_storage import SupabaseStorage
 
@@ -47,11 +49,19 @@ class CameraPipeline:
 
         self.last_frame = None
         self.last_annotated_frame = None
+        self._logger = logging.getLogger(__name__)
 
     def setup(self):
 
         source_type = self.camera_config["source_type"]
         source = self.camera_config["source"]
+        self._logger.info(
+            "Camera %s starting source type=%s source=%s zones=%d",
+            self.camera_config["id"],
+            source_type,
+            source,
+            len(self.zones_config),
+        )
 
         loop = self.camera_config.get(
             "loop",
@@ -66,6 +76,11 @@ class CameraPipeline:
             if self.storage_service.is_storage_source(source):
                 self.temp_source_path = self.storage_service.download_to_temp(
                     source, self.camera_config["id"]
+                )
+                self._logger.info(
+                    "Camera %s downloaded Supabase source to temporary file %s",
+                    self.camera_config["id"],
+                    self.temp_source_path,
                 )
                 source_path = str(self.temp_source_path)
             else:
@@ -143,7 +158,16 @@ class CameraPipeline:
                 raise ValueError(
                     f"Unable to open camera source: {source}"
                 )
+            self._logger.info(
+                "Camera %s VideoCapture opened successfully",
+                self.camera_config["id"],
+            )
         except Exception:
+            self._logger.exception(
+                "Camera %s source setup failed for %s",
+                self.camera_config["id"],
+                source,
+            )
             self.release()
             raise
 
@@ -186,6 +210,11 @@ class CameraPipeline:
 
         self.last_frame = None
         self.last_annotated_frame = None
+        self._logger.info(
+            "Camera %s pipeline initialized; whole-frame counting enabled, zones=%d",
+            self.camera_config["id"],
+            len(self.zones_config),
+        )
 
     def update_zones(self, zones_config):
 
@@ -279,6 +308,13 @@ class CameraPipeline:
                 zones,
                 result,
             )
+        )
+
+        self._logger.debug(
+            "Camera %s whole-frame result total_people=%s zones=%d",
+            self.camera_config["id"],
+            result.total_people,
+            len(result.zones),
         )
 
         return result

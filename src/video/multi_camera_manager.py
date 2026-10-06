@@ -150,6 +150,7 @@ class MultiCameraManager:
                     "Camera %s startup failure: %s",
                     camera["id"],
                     exc,
+                    exc_info=True,
                 )
 
         self._sync_camera_manager()
@@ -163,6 +164,13 @@ class MultiCameraManager:
 
         camera = self._normalize_camera(camera)
         camera_id = camera["id"]
+        self._logger.info(
+            "Starting camera %s source_type=%s source=%s zones=%d",
+            camera_id,
+            camera["source_type"],
+            camera["source"],
+            len(zones_config) if zones_config is not None else -1,
+        )
 
         with self._manager_lock:
 
