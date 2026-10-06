@@ -308,7 +308,7 @@ class MultiCameraManager:
             else:
                 self._logger.info("Camera %s recovery succeeded", camera_id)
 
-    def _normalize_camera(self, camera):
+    def _normalize_camera(self, camera, validate_source=True):
         if not isinstance(camera, dict):
             raise ValueError("Camera configuration must be an object.")
 
@@ -326,11 +326,12 @@ class MultiCameraManager:
         if not source:
             raise ValueError("Camera source cannot be empty.")
 
-        if source_type == "file" and self.storage_service.is_storage_source(source):
-            if not self.storage_service.configured:
-                raise ValueError("Supabase Storage is not configured for camera source.")
-        elif source_type == "file" and not resolve_path(source).is_file():
-            raise ValueError(f"Camera source file not found: {source}")
+        if validate_source:
+            if source_type == "file" and self.storage_service.is_storage_source(source):
+                if not self.storage_service.configured:
+                    raise ValueError("Supabase Storage is not configured for camera source.")
+            elif source_type == "file" and not resolve_path(source).is_file():
+                raise ValueError(f"Camera source file not found: {source}")
 
         if source_type == "rtsp":
             parsed = urlparse(source)
@@ -348,10 +349,10 @@ class MultiCameraManager:
                     raise ValueError(
                         "Drone RTSP source must include a host."
                     )
-            elif self.storage_service.is_storage_source(source):
+            elif validate_source and self.storage_service.is_storage_source(source):
                 if not self.storage_service.configured:
                     raise ValueError("Supabase Storage is not configured for camera source.")
-            elif not resolve_path(source).is_file():
+            elif validate_source and not resolve_path(source).is_file():
                 raise ValueError(
                     f"Drone camera source file not found: {source}"
                 )
@@ -467,16 +468,21 @@ class MultiCameraManager:
                 "loop": bool(existing.get("loop", 1)),
                 "enabled": bool(existing.get("enabled", 1)),
                 "owner_id": existing.get("owner_id", "system"),
-            })
+            }, validate_source=False)
+            source_type = camera.get("source_type", previous["source_type"])
+            source = camera.get("source", previous["source"])
             updated = self._normalize_camera({
                 "id": camera_id,
                 "name": camera.get("name", previous["name"]),
-                "source_type": camera.get("source_type", previous["source_type"]),
-                "source": camera.get("source", previous["source"]),
+                "source_type": source_type,
+                "source": source,
                 "loop": camera.get("loop", previous["loop"]),
                 "enabled": camera.get("enabled", previous["enabled"]),
                 "owner_id": previous["owner_id"],
-            })
+            }, validate_source=(
+                source_type != previous["source_type"]
+                or source != previous["source"]
+            ))
 
             runtime = self.get_camera(camera_id)
             was_running = camera_id in self.workers
