@@ -322,6 +322,11 @@ class CameraPipeline:
                 result,
             )
         )
+        self._logger.debug(
+            "[ANNOTATION_SUCCESS] camera_id=%s people_count=%s",
+            self.camera_config["id"],
+            result.total_people,
+        )
 
         self._logger.debug(
             "Camera %s whole-frame result total_people=%s zones=%d",

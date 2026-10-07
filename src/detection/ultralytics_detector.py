@@ -1,3 +1,6 @@
+import logging
+import time
+
 from ultralytics import YOLO
 
 from src.inference.inference_engine import InferenceEngine
@@ -24,9 +27,23 @@ class UltralyticsPersonDetector(InferenceEngine):
             if device == "auto"
             else device
         )
+        self._logger = logging.getLogger(__name__)
+        self._logged_first_inference = False
 
     def infer(self, frame) -> list[Detection]:
 
+        started_at = time.time()
+        if not self._logged_first_inference:
+            self._logger.info(
+                "[YOLO_START] detector device=%s frame_shape=%s",
+                self.device or "auto",
+                getattr(frame, "shape", None),
+            )
+        self._logger.debug(
+            "[YOLO_START] engine=detector frame_shape=%s device=%s",
+            getattr(frame, "shape", None),
+            self.device or "auto",
+        )
         results = self.model.predict(
             source=frame,
             classes=[0],
@@ -34,6 +51,16 @@ class UltralyticsPersonDetector(InferenceEngine):
             imgsz=self.image_size,
             device=self.device,
             verbose=False,
+        )
+        if not self._logged_first_inference:
+            self._logged_first_inference = True
+            self._logger.info(
+                "[YOLO_RETURN] detector elapsed_ms=%.1f",
+                (time.time() - started_at) * 1000,
+            )
+        self._logger.debug(
+            "[YOLO_RETURN] engine=detector elapsed_ms=%.1f",
+            (time.time() - started_at) * 1000,
         )
 
         detections = []

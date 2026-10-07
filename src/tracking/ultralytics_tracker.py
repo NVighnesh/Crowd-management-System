@@ -1,3 +1,6 @@
+import logging
+import time
+
 from ultralytics import YOLO
 
 from src.detection.detection_types import Detection
@@ -19,9 +22,23 @@ class UltralyticsPersonTracker(PersonTracker):
         self.image_size = image_size
         self.tracker = tracker
         self.device = None if device == "auto" else device
+        self._logger = logging.getLogger(__name__)
+        self._logged_first_inference = False
 
     def infer(self, frame) -> list[Detection]:
 
+        started_at = time.time()
+        if not self._logged_first_inference:
+            self._logger.info(
+                "[YOLO_START] tracker device=%s frame_shape=%s",
+                self.device or "auto",
+                getattr(frame, "shape", None),
+            )
+        self._logger.debug(
+            "[YOLO_START] engine=tracker frame_shape=%s device=%s",
+            getattr(frame, "shape", None),
+            self.device or "auto",
+        )
         results = self.model.track(
             source=frame,
             classes=[0],
@@ -31,6 +48,16 @@ class UltralyticsPersonTracker(PersonTracker):
             tracker=self.tracker,
             persist=True,
             verbose=False,
+        )
+        if not self._logged_first_inference:
+            self._logged_first_inference = True
+            self._logger.info(
+                "[YOLO_RETURN] tracker elapsed_ms=%.1f",
+                (time.time() - started_at) * 1000,
+            )
+        self._logger.debug(
+            "[YOLO_RETURN] engine=tracker elapsed_ms=%.1f",
+            (time.time() - started_at) * 1000,
         )
 
         detections = []

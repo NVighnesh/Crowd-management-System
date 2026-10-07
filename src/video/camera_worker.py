@@ -81,6 +81,23 @@ class CameraWorker:
 
         self._state_lock = threading.Lock()
         self._logger = logging.getLogger(__name__)
+        self._capture_interval = self._get_capture_interval()
+
+    def _get_capture_interval(self):
+        source = getattr(self.pipeline, "source", None)
+        capture = getattr(source, "cap", None)
+        if capture is None:
+            return 0.0
+
+        try:
+            source_fps = float(capture.get(5))
+        except (TypeError, ValueError):
+            return 0.0
+
+        if source_fps <= 0:
+            return 0.0
+
+        return min(1.0 / source_fps, 1.0 / 30.0)
 
     # --------------------------------------------------
     # Start
@@ -184,6 +201,12 @@ class CameraWorker:
 
                 self.frame_buffer.update(frame)
 
+            if self._capture_interval > 0:
+                elapsed = time.time() - start_time
+                remaining = self._capture_interval - elapsed
+                if remaining > 0:
+                    time.sleep(remaining)
+
     # --------------------------------------------------
     # Inference loop
     # --------------------------------------------------
@@ -193,6 +216,10 @@ class CameraWorker:
         interval = 1.0 / self.inference_fps
 
         self.next_inference_time = time.time()
+        self._logger.info(
+            "Camera %s inference loop entered",
+            self.pipeline.camera_config.get("id", "unknown"),
+        )
 
         while self.running:
 
@@ -232,14 +259,32 @@ class CameraWorker:
             return
 
         start_time = time.time()
+        camera_id = self.pipeline.camera_config.get("id", "unknown")
+        self._logger.debug(
+            "[INFERENCE_START] camera_id=%s frame_sequence=%s frame_shape=%s",
+            camera_id,
+            sequence,
+            getattr(frame, "shape", None),
+        )
 
         try:
 
+            self._logger.debug(
+                "[INFERENCE_ENGINE] camera_id=%s engine=%s",
+                camera_id,
+                type(self.pipeline.engine).__name__,
+            )
             result = self.pipeline.process_frame(
                 frame
             )
 
             elapsed = time.time() - start_time
+            self._logger.debug(
+                "[INFERENCE_SUCCESS] camera_id=%s elapsed_ms=%.1f people_count=%s",
+                camera_id,
+                elapsed * 1000,
+                getattr(result, "total_people", None),
+            )
 
             with self._state_lock:
 
@@ -264,7 +309,7 @@ class CameraWorker:
                 if self.total_inferences == 1:
                     self._logger.info(
                         "Camera %s produced its first inference result",
-                        self.pipeline.camera_config.get("id", "unknown"),
+                        camera_id,
                     )
 
         except Exception as exc:
@@ -276,7 +321,7 @@ class CameraWorker:
                 self.last_error = str(exc)
             self._logger.exception(
                 "Camera %s inference failed",
-                self.pipeline.camera_config.get("id", "unknown"),
+                camera_id,
             )
 
     # --------------------------------------------------
@@ -497,6 +542,14 @@ class CameraWorker:
                     "read_failures",
                     0,
                 ) if self.pipeline is not None else 0,
+                "capture_thread_alive": (
+                    self.capture_thread is not None
+                    and self.capture_thread.is_alive()
+                ),
+                "inference_thread_alive": (
+                    self.inference_thread is not None
+                    and self.inference_thread.is_alive()
+                ),
             }
 
     def _source_is_open(self):
