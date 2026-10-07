@@ -82,6 +82,8 @@ class CameraWorker:
         self._state_lock = threading.Lock()
         self._logger = logging.getLogger(__name__)
         self._capture_interval = self._get_capture_interval()
+        self._inference_waiting_logged = False
+        self._inference_frame_received_logged = False
 
     def _get_capture_interval(self):
         source = getattr(self.pipeline, "source", None)
@@ -200,6 +202,13 @@ class CameraWorker:
             if success and frame is not None:
 
                 self.frame_buffer.update(frame)
+                if self.total_frames_captured == 1:
+                    self._logger.info(
+                        "[FRAME_BUFFER_UPDATE] camera_id=%s frame_number=%s frame_shape=%s",
+                        self.pipeline.camera_config.get("id", "unknown"),
+                        self.total_frames_captured,
+                        getattr(frame, "shape", None),
+                    )
 
             if self._capture_interval > 0:
                 elapsed = time.time() - start_time
@@ -214,11 +223,16 @@ class CameraWorker:
     def _inference_loop(self):
 
         interval = 1.0 / self.inference_fps
+        camera_id = self.pipeline.camera_config.get("id", "unknown")
 
         self.next_inference_time = time.time()
         self._logger.info(
-            "Camera %s inference loop entered",
-            self.pipeline.camera_config.get("id", "unknown"),
+            "[INFERENCE_THREAD_STARTED] camera_id=%s",
+            camera_id,
+        )
+        self._logger.info(
+            "[INFERENCE_LOOP_ENTERED] camera_id=%s",
+            camera_id,
         )
 
         while self.running:
@@ -253,6 +267,12 @@ class CameraWorker:
         )
 
         if frame is None:
+            if not self._inference_waiting_logged:
+                self._logger.info(
+                    "[INFERENCE_WAITING_FOR_FRAME] camera_id=%s",
+                    self.pipeline.camera_config.get("id", "unknown"),
+                )
+                self._inference_waiting_logged = True
             return
 
         if sequence <= self._last_inferred_frame_sequence:
@@ -260,6 +280,19 @@ class CameraWorker:
 
         start_time = time.time()
         camera_id = self.pipeline.camera_config.get("id", "unknown")
+        if not self._inference_frame_received_logged:
+            self._logger.info(
+                "[INFERENCE_FRAME_RECEIVED] camera_id=%s frame_number=%s frame_shape=%s",
+                camera_id,
+                sequence,
+                getattr(frame, "shape", None),
+            )
+            self._inference_frame_received_logged = True
+        self._logger.info(
+            "[YOLO_START] camera_id=%s frame_number=%s",
+            camera_id,
+            sequence,
+        )
         self._logger.debug(
             "[INFERENCE_START] camera_id=%s frame_sequence=%s frame_shape=%s",
             camera_id,
@@ -279,6 +312,12 @@ class CameraWorker:
             )
 
             elapsed = time.time() - start_time
+            self._logger.info(
+                "[YOLO_RETURN] camera_id=%s frame_number=%s elapsed_ms=%.1f",
+                camera_id,
+                sequence,
+                elapsed * 1000,
+            )
             self._logger.debug(
                 "[INFERENCE_SUCCESS] camera_id=%s elapsed_ms=%.1f people_count=%s",
                 camera_id,
@@ -300,6 +339,23 @@ class CameraWorker:
 
                 self.last_error = None
 
+            self._logger.info(
+                "[INFERENCE_SUCCESS] camera_id=%s frame_number=%s people_count=%s",
+                camera_id,
+                sequence,
+                getattr(result, "total_people", None),
+            )
+            self._logger.info(
+                "[ANNOTATION_SUCCESS] camera_id=%s frame_number=%s",
+                camera_id,
+                sequence,
+            )
+            self._logger.info(
+                "[FRAME_BUFFER_UPDATE] camera_id=%s frame_number=%s",
+                camera_id,
+                sequence,
+            )
+
             if (
                 result is not None
                 and self.result_callback is not None
@@ -320,8 +376,11 @@ class CameraWorker:
 
                 self.last_error = str(exc)
             self._logger.exception(
-                "Camera %s inference failed",
+                "[INFERENCE_EXCEPTION] camera_id=%s exception_type=%s exception_message=%s frame_number=%s",
                 camera_id,
+                type(exc).__name__,
+                str(exc),
+                sequence,
             )
 
     # --------------------------------------------------
