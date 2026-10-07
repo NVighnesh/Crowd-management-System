@@ -22,6 +22,30 @@ class SystemHealthService:
 
         worker = self.multi_camera_manager.workers.get(camera_id)
         if worker is None:
+            runtime_mode = getattr(
+                self.multi_camera_manager,
+                "runtime_mode",
+                "AI_WORKER",
+            )
+            if runtime_mode == "API_ONLY" and camera.get("enabled", True):
+                return {
+                    "camera_id": camera_id,
+                    "camera_name": camera.get("name", camera_id),
+                    "owner_id": camera.get("owner_id", "system"),
+                    "enabled": True,
+                    "status": "AI_WORKER_UNAVAILABLE",
+                    "processing_status": "REMOTE",
+                    "worker_state": "NOT_RUNNING",
+                    "pipeline_initialized": False,
+                    "source_open": False,
+                    "last_frame_time": None,
+                    "last_inference_time": None,
+                    "inference_fps": 0.0,
+                    "average_inference_latency_ms": 0.0,
+                    "last_error": "AI worker is not connected.",
+                    "recovery_attempts": 0,
+                    "recovery_exhausted": False,
+                }
             recovery = getattr(
                 self.multi_camera_manager,
                 "_recovery_state",
@@ -89,6 +113,11 @@ class SystemHealthService:
         }
 
     def get_health(self):
+        runtime_mode = getattr(
+            self.multi_camera_manager,
+            "runtime_mode",
+            "AI_WORKER",
+        )
         cameras = [
             self.get_camera_health(camera["id"])
             for camera in self.camera_manager.get_all_cameras()
@@ -115,6 +144,19 @@ class SystemHealthService:
         return {
             "status": "UP" if database_status == "UP" else "DEGRADED",
             "service": "crowd-management",
+            "runtime_mode": runtime_mode,
+            "ai_worker": {
+                "status": (
+                    "NOT_RUNNING"
+                    if runtime_mode == "API_ONLY"
+                    else "LOCAL"
+                ),
+                "message": (
+                    "Inference is disabled in API_ONLY mode."
+                    if runtime_mode == "API_ONLY"
+                    else None
+                ),
+            },
             "uptime_seconds": time.time() - self.started_at,
             "database": {
                 "status": database_status,

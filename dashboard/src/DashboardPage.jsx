@@ -13,7 +13,7 @@ import "./dashboard.css";
 import { useNavigate, useParams } from "react-router-dom";
 import { clearSession, getRole, getToken, getUsername } from "./auth";
 import Icon from "./Icon";
-import { API_BASE_URL } from "./apiBase";
+import { API_BASE_URL, AI_API_BASE_URL } from "./apiBase";
 
 function App() {
     const [overview, setOverview] = useState(null);
@@ -38,7 +38,7 @@ function App() {
     useEffect(() => {
         let cancelled = false;
 
-        fetch(`${API_BASE_URL}/auth/stream-token`, {
+        fetch(`${AI_API_BASE_URL}/auth/stream-token`, {
             method: "POST",
             headers: {
                 Authorization: `Bearer ${getToken() || ""}`,
@@ -371,7 +371,7 @@ function App() {
         const query = streamToken
             ? `?stream_token=${encodeURIComponent(streamToken)}`
             : "";
-        return `${API_BASE_URL}/cameras/${cameraId}/stream${query}`;
+        return `${AI_API_BASE_URL}/cameras/${cameraId}/stream${query}`;
     }
 
     function formatAge(age) {

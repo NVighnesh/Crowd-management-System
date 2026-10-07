@@ -16,12 +16,25 @@ DEFAULT_CORS_ORIGINS = (
     "http://localhost:4173,http://127.0.0.1:4173"
 )
 
+RUNTIME_MODES = {"API_ONLY", "AI_WORKER"}
+
 
 def load_config():
     with open(CONFIG_PATH, "r", encoding="utf-8") as file:
         config = yaml.safe_load(file)
 
     return config
+
+
+def get_runtime_mode() -> str:
+    """Return the process role without enabling a heavy runtime by accident."""
+
+    mode = os.getenv("CROWD_RUNTIME_MODE", "API_ONLY").strip().upper()
+    if mode not in RUNTIME_MODES:
+        raise ValueError(
+            "CROWD_RUNTIME_MODE must be one of: API_ONLY, AI_WORKER."
+        )
+    return mode
 
 
 def resolve_path(path: str) -> Path:

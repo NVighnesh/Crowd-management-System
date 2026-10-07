@@ -14,10 +14,9 @@ import time
 from src.config.settings import load_config
 from src.config.settings import PROJECT_ROOT
 from src.config.settings import get_cors_origins
+from src.config.settings import get_runtime_mode
 from src.config.validator import ConfigValidator
 from src.video.camera_manager import CameraManager
-from src.video.multi_camera_manager import MultiCameraManager
-from src.video.frame_streamer import FrameStreamer
 from src.alerts.alert_serializer import AlertSerializer
 from src.system.overview_service import SystemOverviewService
 from src.system.health_service import SystemHealthService
@@ -325,6 +324,7 @@ async def lifespan(app: FastAPI):
     global storage_service
 
     config = load_config()
+    runtime_mode = get_runtime_mode()
 
     ConfigValidator.validate(config)
 
@@ -362,15 +362,25 @@ async def lifespan(app: FastAPI):
         runtime_cameras
     )
 
-    multi_camera_manager = MultiCameraManager(
-        cameras=runtime_cameras,
-        inference_config=config["inference"],
-        tracking_config=config["tracking"],
-        counting_config=config["counting"],
-        processing_config=config["processing"],
-        camera_manager=camera_manager,
-        storage_service=storage_service,
-    )
+    if runtime_mode == "AI_WORKER":
+        from src.video.multi_camera_manager import MultiCameraManager
+
+        multi_camera_manager = MultiCameraManager(
+            cameras=runtime_cameras,
+            inference_config=config["inference"],
+            tracking_config=config["tracking"],
+            counting_config=config["counting"],
+            processing_config=config["processing"],
+            camera_manager=camera_manager,
+            storage_service=storage_service,
+        )
+    else:
+        from src.video.api_only_manager import ApiOnlyCameraManager
+
+        multi_camera_manager = ApiOnlyCameraManager(
+            camera_manager=camera_manager,
+            database_service=database_service,
+        )
 
     multi_camera_manager.setup()
 
@@ -387,7 +397,8 @@ async def lifespan(app: FastAPI):
 
     print(
         f"Crowd Management API started with "
-        f"{len(camera_manager.get_enabled_cameras())} camera(s)."
+        f"{len(camera_manager.get_enabled_cameras())} camera(s) "
+        f"runtime_mode={runtime_mode}."
     )
 
     yield
@@ -917,8 +928,28 @@ def get_cameras(request: Request):
                 "source": camera["source"],
                 "loop": camera.get("loop", False),
                 "enabled": camera.get("enabled", True),
-                "status": multi_camera_manager.workers[camera["id"]].get_status()["status"] if camera["id"] in multi_camera_manager.workers else "DISABLED",
-                "processing_status": multi_camera_manager.workers[camera["id"]].get_status()["processing_status"] if camera["id"] in multi_camera_manager.workers else "DISABLED",
+                "status": (
+                    multi_camera_manager.workers[camera["id"]].get_status()["status"]
+                    if camera["id"] in multi_camera_manager.workers
+                    else (
+                        "AI_WORKER_UNAVAILABLE"
+                        if getattr(multi_camera_manager, "runtime_mode", None)
+                        == "API_ONLY"
+                        else "DISABLED"
+                    )
+                ),
+                "processing_status": (
+                    multi_camera_manager.workers[camera["id"]].get_status()[
+                        "processing_status"
+                    ]
+                    if camera["id"] in multi_camera_manager.workers
+                    else (
+                        "REMOTE"
+                        if getattr(multi_camera_manager, "runtime_mode", None)
+                        == "API_ONLY"
+                        else "DISABLED"
+                    )
+                ),
             }
             for camera in cameras
         ]
@@ -1153,10 +1184,12 @@ def get_camera_stream(camera_id: str):
     )
 
     if worker is None:
-        raise HTTPException(
-            status_code=404,
-            detail=f"Camera not found: {camera_id}",
-        )
+        if getattr(multi_camera_manager, "runtime_mode", None) == "API_ONLY":
+            raise HTTPException(
+                status_code=503,
+                detail="AI worker not connected.",
+            )
+        raise HTTPException(status_code=404, detail=f"Camera not found: {camera_id}")
 
     status = worker.get_status()
     LOGGER.info(
@@ -1213,6 +1246,8 @@ def get_camera_stream(camera_id: str):
                 ),
             )
         time.sleep(0.1)
+
+    from src.video.frame_streamer import FrameStreamer
 
     streamer = FrameStreamer(
         worker=worker,

@@ -24,6 +24,11 @@ class SystemOverviewService:
     # --------------------------------------------------
 
     def get_overview(self):
+        runtime_mode = getattr(
+            self.multi_camera_manager,
+            "runtime_mode",
+            "AI_WORKER",
+        )
 
         cameras = (
             self.camera_manager
@@ -36,7 +41,7 @@ class SystemOverviewService:
         offline_cameras = 0
         stale_cameras = 0
 
-        total_people = 0
+        total_people = None if runtime_mode == "API_ONLY" else 0
 
         for camera in cameras:
 
@@ -57,9 +62,21 @@ class SystemOverviewService:
                             camera_id,
                         ),
                         "owner_id": camera.get("owner_id"),
-                        "status": "OFFLINE",
-                        "processing_status": "OFFLINE",
-                        "last_error": "Camera worker is not running.",
+                        "status": (
+                            "AI_WORKER_UNAVAILABLE"
+                            if runtime_mode == "API_ONLY"
+                            else "OFFLINE"
+                        ),
+                        "processing_status": (
+                            "REMOTE"
+                            if runtime_mode == "API_ONLY"
+                            else "OFFLINE"
+                        ),
+                        "last_error": (
+                            "AI worker is not connected."
+                            if runtime_mode == "API_ONLY"
+                            else "Camera worker is not running."
+                        ),
                         "last_frame_time": None,
                         "last_inference_time": None,
                         "result_timestamp": None,

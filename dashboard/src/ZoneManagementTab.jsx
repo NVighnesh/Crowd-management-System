@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { getToken } from "./auth";
 import Icon from "./Icon";
-import { API_BASE_URL } from "./apiBase";
+import { API_BASE_URL, AI_API_BASE_URL } from "./apiBase";
 
 const EMPTY_FORM = {
     zone_id: "",
@@ -105,7 +105,7 @@ function ZoneManagementTab({ onCameraManagement, initialCameraId = "" }) {
     useEffect(() => {
         let cancelled = false;
 
-        fetch(`${API_BASE_URL}/auth/stream-token`, {
+        fetch(`${AI_API_BASE_URL}/auth/stream-token`, {
             method: "POST",
             headers: {
                 Authorization: `Bearer ${getToken() || ""}`,
@@ -138,7 +138,7 @@ function ZoneManagementTab({ onCameraManagement, initialCameraId = "" }) {
             return "";
         }
 
-        return `${API_BASE_URL}/cameras/${encodeURIComponent(
+        return `${AI_API_BASE_URL}/cameras/${encodeURIComponent(
             cameraId
         )}/stream?stream_token=${encodeURIComponent(streamToken)}`;
     }
@@ -150,7 +150,7 @@ function ZoneManagementTab({ onCameraManagement, initialCameraId = "" }) {
         try {
             const [overviewResponse, camerasResponse] =
                 await Promise.all([
-                    fetch(`${API_BASE_URL}/system/overview`, {
+                    fetch(`${AI_API_BASE_URL}/system/overview`, {
                         headers: authenticatedHeaders(),
                         credentials: "include",
                     }),

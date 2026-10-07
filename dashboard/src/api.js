@@ -1,4 +1,4 @@
-import { API_BASE_URL } from "./apiBase";
+import { API_BASE_URL, AI_API_BASE_URL } from "./apiBase";
 
 async function fetchJson(url, errorMessage, options = {}) {
     const response = await fetch(url, options);
@@ -16,7 +16,7 @@ async function fetchJson(url, errorMessage, options = {}) {
 
 export async function getSystemOverview(options = {}) {
     return fetchJson(
-        `${API_BASE_URL}/system/overview`,
+        `${AI_API_BASE_URL}/system/overview`,
         "Failed to fetch system overview",
         options
     );

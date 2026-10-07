@@ -13,7 +13,7 @@ import {
 } from "./auth";
 import Icon from "./Icon";
 import "./App.css";
-import { API_BASE_URL } from "./apiBase";
+import { API_BASE_URL, AI_API_BASE_URL } from "./apiBase";
 
 function getSourceBasename(source) {
     if (!source) {
@@ -286,9 +286,9 @@ function ProfileScreen() {
     useEffect(() => {
         let mounted = true;
         Promise.all([
-            fetch(`${API_BASE_URL}/system/overview`),
+            fetch(`${AI_API_BASE_URL}/system/overview`),
             fetch(`${API_BASE_URL}/cameras`),
-            fetch(`${API_BASE_URL}/auth/stream-token`, {
+            fetch(`${AI_API_BASE_URL}/auth/stream-token`, {
                 method: "POST",
                 headers: {
                     Authorization: `Bearer ${getToken() || ""}`,
@@ -360,7 +360,7 @@ function ProfileScreen() {
             return "";
         }
 
-        return `${API_BASE_URL}/cameras/${encodeURIComponent(
+        return `${AI_API_BASE_URL}/cameras/${encodeURIComponent(
             cameraId
         )}/stream?stream_token=${encodeURIComponent(streamToken)}`;
     }
